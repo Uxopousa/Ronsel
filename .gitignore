@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE and editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Agent / AI tooling internal files
+AGENTIC-BOOTSTRAP.md
+.opencode/
+.ai/
+.prompts/
+.bootstrap/
+.memory/
+.sessions/
+.cache/
+.temp/
+.tmp/
+
+# Testing
+coverage/
+
+# Misc
+.turbo/
+*.tsbuildinfo
