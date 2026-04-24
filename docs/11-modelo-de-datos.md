@@ -132,7 +132,6 @@ model User {
   email     String   @unique
   password  String
   name      String
-  avatar    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

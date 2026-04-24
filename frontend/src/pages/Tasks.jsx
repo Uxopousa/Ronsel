@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import * as taskService from '../services/tasks';
 import * as categoryService from '../services/categories';
+import * as goalService from '../services/goals';
 import TaskModal from '../components/shared/TaskModal';
 import CategoryModal from '../components/shared/CategoryModal';
 
@@ -27,10 +28,12 @@ const statusStyles = {
 export default function Tasks() {
   const [tasks, setTasks] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [goals, setGoals] = useState([]);
   const [filters, setFilters] = useState({
     status: '',
     priority: '',
     categoryId: '',
+    goalId: '',
     sortBy: 'createdAt',
     sortOrder: 'desc',
   });
@@ -47,8 +50,12 @@ export default function Tasks() {
     categoryService.getCategories().then(setCategories);
   }
 
+  function loadGoals() {
+    goalService.getGoals().then(setGoals);
+  }
+
   useEffect(() => { loadTasks(); }, [filters]);
-  useEffect(() => { loadCategories(); }, []);
+  useEffect(() => { loadCategories(); loadGoals(); }, []);
 
   async function handleSave(task) {
     if (task.id) {
@@ -122,6 +129,17 @@ export default function Tasks() {
           <option value="">Todas las categorías</option>
           {categories.map((cat) => (
             <option key={cat.id} value={cat.id}>{cat.name}</option>
+          ))}
+        </select>
+
+        <select
+          value={filters.goalId}
+          onChange={(e) => setFilters({ ...filters, goalId: e.target.value })}
+          className="text-sm border border-gray-300 rounded-lg px-3 py-1.5"
+        >
+          <option value="">Todos los objetivos</option>
+          {goals.filter((g) => g.status === 'ACTIVE').map((g) => (
+            <option key={g.id} value={g.id}>{g.title}</option>
           ))}
         </select>
       </div>
@@ -205,6 +223,7 @@ export default function Tasks() {
         <TaskModal
           task={taskModal}
           categories={categories}
+          goals={goals}
           onSave={handleSave}
           onClose={() => setTaskModal(null)}
         />

@@ -82,6 +82,7 @@ model Task {
   @@index([userId, dueDate])
   @@index([userId, priority])
   @@index([userId, categoryId])
+  @@index([userId, goalId])
 }
 
 model Habit {

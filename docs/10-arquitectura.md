@@ -22,19 +22,16 @@ Ronsel sigue una arquitectura **SPA (Single Page Application)** con frontend Rea
 
 ```
 src/
-├── components/       # Componentes reutilizables (Button, Card, Modal, etc.)
-│   ├── ui/           # Componentes atómicos (Input, Select, Badge, etc.)
-│   ├── layout/       # Header, Sidebar, MainLayout
-│   └── shared/       # TaskCard, HabitCard, ProgressBar, etc.
+├── components/       # Componentes reutilizables
+│   ├── ui/           # Toast, indicadores
+│   ├── layout/       # Layout, ProtectedRoute
+│   └── shared/       # TaskModal, HabitModal, GoalModal, GoalDetail, etc.
 ├── pages/            # Páginas (Dashboard, Tasks, Habits, Goals, Login, Register)
-├── hooks/            # Custom hooks (useAuth, useTasks, useHabits, useGoals)
-├── services/         # Llamadas a la API (api/tasks.js, api/habits.js, etc.)
-├── context/          # Contextos de React (AuthContext)
-├── utils/            # Utilidades (formatDate, cn, validators)
-├── types/            # Definiciones de tipos JSDoc/TypeScript
-├── styles/           # Estilos globales, variables CSS
+├── services/         # Llamadas a la API (tasks.js, habits.js, goals.js, etc.)
+├── context/          # AuthContext
 ├── App.jsx           # Configuración de rutas
-└── main.jsx          # Punto de entrada
+├── main.jsx          # Punto de entrada
+└── index.css         # Estilos globales (Tailwind)
 ```
 
 ### Principios del frontend
