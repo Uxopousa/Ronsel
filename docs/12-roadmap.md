@@ -1,114 +1,94 @@
 # Roadmap de Desarrollo
 
-## Fase 0 — Fundación (Semanas 1-3)
+## Fase 0 — Fundación ✅
 
 ### Objetivo
 Tener el esqueleto del proyecto funcionando: frontend sirviendo, backend respondiendo, base de datos conectada.
 
 ### Tareas
-- [ ] Inicializar monorepo (frontend Vite + backend Express)
-- [ ] Configurar ESLint + Prettier
-- [ ] Configurar Prisma + esquema inicial + migración
-- [ ] Configurar Neon PostgreSQL
-- [ ] Implementar auth endpoints (register, login)
-- [ ] Implementar middleware JWT
-- [ ] Crear layout base del frontend (Header, Sidebar, Router)
-- [ ] Implementar páginas de Login y Register (frontend)
-- [ ] Configurar Swagger/OpenAPI
-- [ ] Configurar Helmet, CORS
-- [ ] CI básico (lint + build en GitHub Actions)
+- [x] Inicializar monorepo (frontend Vite + backend Express)
+- [x] Configurar Prisma + esquema inicial
+- [x] Implementar auth endpoints (register, login, me)
+- [x] Implementar middleware JWT
+- [x] Crear layout base del frontend (Header, Sidebar, Router)
+- [x] Implementar páginas de Login y Register (frontend)
+- [x] Configurar Swagger/OpenAPI (infraestructura)
+- [x] Configurar Helmet, CORS
 
 ### Hito
 ✅ API funcionando con auth + frontend con login funcional.
 
-### Dependencias
-Ninguna.
-
 ---
 
-## Fase 1 — Tareas y Categorías (Semanas 4-6)
+## Fase 1 — Tareas y Categorías ✅
 
 ### Objetivo
 Módulo de tareas completo con categorías.
 
 ### Tareas
-- [ ] CRUD de categorías (backend + frontend)
-- [ ] CRUD de tareas (backend)
-- [ ] Página de tareas (frontend) con lista filtrable
-- [ ] Filtros combinados (estado + prioridad + categoría + fecha)
-- [ ] Modal de crear/editar tarea (frontend)
-- [ ] Acción rápida: marcar completada
+- [x] CRUD de categorías (backend + frontend)
+- [x] CRUD de tareas (backend)
+- [x] Página de tareas (frontend) con lista filtrable
+- [x] Filtros combinados (estado + prioridad + categoría + fecha)
+- [x] Modal de crear/editar tarea (frontend)
+- [x] Acción rápida: marcar completada
 
 ### Hito
 ✅ Usuario puede gestionar tareas con categorías y filtros.
 
-### Dependencias
-Fase 0 completada.
-
 ---
 
-## Fase 2 — Hábitos (Semanas 7-8)
+## Fase 2 — Hábitos ✅
 
 ### Objetivo
 Módulo de hábitos con registro diario y rachas.
 
 ### Tareas
-- [ ] CRUD de hábitos (backend + frontend)
-- [ ] Registro diario de cumplimiento (backend + frontend)
-- [ ] Cálculo de rachas actual y más larga
-- [ ] Calendario mensual de cumplimiento (frontend)
-- [ ] Página de hábitos (frontend)
+- [x] CRUD de hábitos (backend + frontend)
+- [x] Registro diario de cumplimiento (backend + frontend)
+- [x] Cálculo de rachas actual y más larga
+- [x] Calendario mensual de cumplimiento (frontend)
+- [x] Página de hábitos (frontend)
 
 ### Hito
 ✅ Usuario puede crear hábitos y mantener rachas.
 
-### Dependencias
-Fase 1 completada.
-
 ---
 
-## Fase 3 — Objetivos y Dashboard (Semanas 9-11)
+## Fase 3 — Objetivos y Dashboard ✅
 
 ### Objetivo
 Módulo de objetivos completo + dashboard que integra todo.
 
 ### Tareas
-- [ ] CRUD de objetivos (backend + frontend)
-- [ ] CRUD de hitos (backend + frontend)
-- [ ] Progreso automático (%)
-- [ ] Asociar tareas a objetivos
-- [ ] Dashboard: vista de hoy (frontend)
-- [ ] Dashboard: vista semanal (frontend)
-- [ ] Resumen de objetivos activos en dashboard
+- [x] CRUD de objetivos (backend + frontend)
+- [x] CRUD de hitos (backend + frontend)
+- [x] Progreso automático (%)
+- [x] Asociar tareas a objetivos (visualización)
+- [x] Dashboard: vista de hoy (frontend)
+- [x] Dashboard: vista semanal (frontend)
+- [x] Resumen de objetivos activos en dashboard
+- [x] Próximos hitos en dashboard
 
 ### Hito
 ✅ MVP funcional: usuario puede gestionar tareas, hábitos, objetivos y ver su semana.
 
-### Dependencias
-Fases 1 y 2 completadas.
-
 ---
 
-## Fase 4 — Pulido y Despliegue (Semana 12)
+## Fase 4 — Pulido y Despliegue ✅
 
 ### Objetivo
-MVP desplegado y accesible públicamente.
+MVP pulido y preparado para desplegar.
 
 ### Tareas
-- [ ] Responsive design completo (mobile)
-- [ ] Estados de carga, vacío y error en todas las vistas
-- [ ] Manejo global de errores (frontend + backend)
-- [ ] Mejoras de UX (tooltips, atajos, animaciones sutiles)
-- [ ] Despliegue frontend en Vercel
-- [ ] Despliegue backend en Railway
-- [ ] Variables de entorno configuradas en producción
-- [ ] Smoke test post-despliegue
+- [x] Diseño responsive (sidebar colapsable en móvil)
+- [x] Estados de carga, vacío y error en todas las vistas
+- [x] Sistema de notificaciones toast
+- [x] Configuración Vercel (frontend)
+- [x] Configuración Railway / Procfile (backend)
 
 ### Hito
-✅ MVP desplegado y listo para validación con usuarios reales.
-
-### Dependencias
-Fase 3 completada.
+✅ MVP listo para despliegue y validación.
 
 ---
 
@@ -124,13 +104,10 @@ Fase 3 completada.
 | **v1.6** | Colaboración en objetivos | Baja |
 | **v1.7** | Aplicación móvil (PWA o nativa) | Baja |
 | **v1.8** | Integraciones (Google Calendar, Slack) | Baja |
+| **—** | Tests automatizados (Vitest + RTL) | Alta |
 
 ## Resumen temporal
 
 ```
-Sem   1  2  3 │  4  5  6 │  7  8 │  9 10 11 │ 12
-Fase    0     │    1     │   2   │    3     │  4
-              │          │       │          │
-Hito:   API   │  Tareas  │Hábitos│ Objetivos│ MVP
-        auth  │  +cats   │       │+Dashboard│ LIVE!
+MVP completado. Pendiente: despliegue en producción.
 ```
