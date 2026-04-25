@@ -32,19 +32,19 @@ export default function TaskModal({ task, categories, goals, onSave, onClose }) 
   }
 
   return (
-    <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 animate-fade-in" onClick={onClose}>
-      <div className="bg-white rounded-lg shadow-modal w-full max-w-md mx-4 animate-scale-in" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 h-12 border-b border-gray-100">
-          <h2 className="text-sm font-semibold text-gray-900">
+    <div className="fixed inset-0 bg-black/20 dark:bg-black/60 flex items-center justify-center z-50 animate-fade-in" onClick={onClose}>
+      <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-modal w-full max-w-md mx-4 animate-scale-in" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 h-12 border-b border-gray-100 dark:border-neutral-800">
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-neutral-100">
             {isEdit ? 'Editar tarea' : 'Nueva tarea'}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors">
             <X size={16} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           {error && (
-            <div className="px-3 py-2 bg-red-50 border border-red-100 rounded-md text-xs text-red-600">
+            <div className="px-3 py-2 bg-red-50 dark:bg-red-950 border border-red-100 dark:border-red-900 rounded-md text-xs text-red-600 dark:text-red-300">
               {error}
             </div>
           )}
@@ -59,7 +59,6 @@ export default function TaskModal({ task, categories, goals, onSave, onClose }) 
               placeholder="¿Qué tienes que hacer?"
             />
           </div>
-
           <div>
             <label className="input-label">Descripción</label>
             <textarea
@@ -70,67 +69,37 @@ export default function TaskModal({ task, categories, goals, onSave, onClose }) 
               placeholder="Opcional"
             />
           </div>
-
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="input-label">Prioridad</label>
-              <select
-                value={form.priority}
-                onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                className="select text-sm"
-              >
+              <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })} className="select text-sm">
                 <option value="LOW">Baja</option>
                 <option value="MEDIUM">Media</option>
                 <option value="HIGH">Alta</option>
               </select>
             </div>
-
             <div>
               <label className="input-label">Fecha límite</label>
-              <input
-                type="date"
-                value={form.dueDate}
-                onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
-                className="input"
-              />
+              <input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} className="input" />
             </div>
           </div>
-
           <div>
             <label className="input-label">Categoría</label>
-            <select
-              value={form.categoryId}
-              onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-              className="select text-sm"
-            >
+            <select value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })} className="select text-sm">
               <option value="">Sin categoría</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
+              {categories.map((cat) => (<option key={cat.id} value={cat.id}>{cat.name}</option>))}
             </select>
           </div>
-
           <div>
             <label className="input-label">Objetivo</label>
-            <select
-              value={form.goalId}
-              onChange={(e) => setForm({ ...form, goalId: e.target.value })}
-              className="select text-sm"
-            >
+            <select value={form.goalId} onChange={(e) => setForm({ ...form, goalId: e.target.value })} className="select text-sm">
               <option value="">Sin objetivo</option>
-              {(goals || []).map((g) => (
-                <option key={g.id} value={g.id}>{g.title}</option>
-              ))}
+              {(goals || []).map((g) => (<option key={g.id} value={g.id}>{g.title}</option>))}
             </select>
           </div>
-
           <div className="flex justify-end gap-2 pt-1">
-            <button type="button" onClick={onClose} className="btn-secondary btn-md">
-              Cancelar
-            </button>
-            <button type="submit" className="btn-primary btn-md">
-              {isEdit ? 'Guardar cambios' : 'Crear tarea'}
-            </button>
+            <button type="button" onClick={onClose} className="btn-secondary btn-md">Cancelar</button>
+            <button type="submit" className="btn-primary btn-md">{isEdit ? 'Guardar cambios' : 'Crear tarea'}</button>
           </div>
         </form>
       </div>

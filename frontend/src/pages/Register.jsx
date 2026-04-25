@@ -24,68 +24,43 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-neutral-950 px-4">
       <div className="w-full max-w-sm animate-slide-up">
         <div className="text-center mb-8">
           <BrandLogo size={40} className="mx-auto mb-3" />
-          <h1 className="text-xl font-semibold text-gray-900">Ronsel</h1>
-          <p className="text-sm text-gray-400 mt-1">Crea tu cuenta</p>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-neutral-100">Ronsel</h1>
+          <p className="text-sm text-gray-400 dark:text-neutral-500 mt-1">Crea tu cuenta</p>
         </div>
 
         <div className="card p-6">
           {error && (
-            <div className="mb-4 px-3 py-2 bg-red-50 border border-red-100 rounded-md text-xs text-red-600">
+            <div className="mb-4 px-3 py-2 bg-red-50 dark:bg-red-950 border border-red-100 dark:border-red-900 rounded-md text-xs text-red-600 dark:text-red-300">
               {error}
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="input-label">Nombre</label>
-              <input
-                type="text"
-                required
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="input"
-                placeholder="Tu nombre"
-              />
+              <input type="text" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" placeholder="Tu nombre" />
             </div>
             <div>
               <label className="input-label">Email</label>
-              <input
-                type="email"
-                required
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="input"
-                placeholder="tu@email.com"
-              />
+              <input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="input" placeholder="tu@email.com" />
             </div>
             <div>
               <label className="input-label">Contraseña</label>
-              <input
-                type="password"
-                required
-                minLength={8}
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="input"
-                placeholder="••••••••"
-              />
-              <p className="text-[0.625rem] text-gray-400 mt-1">Mínimo 8 caracteres</p>
+              <input type="password" required minLength={8} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="input" placeholder="••••••••" />
+              <p className="text-[0.625rem] text-gray-400 dark:text-neutral-500 mt-1">Mínimo 8 caracteres</p>
             </div>
             <button type="submit" className="btn-primary btn-lg w-full gap-2">
-              <UserPlus size={15} />
-              Crear cuenta
+              <UserPlus size={15} />Crear cuenta
             </button>
           </form>
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-6">
+        <p className="text-center text-xs text-gray-400 dark:text-neutral-500 mt-6">
           ¿Ya tienes cuenta?{' '}
-          <Link to="/login" className="text-primary-600 hover:text-primary-700 font-medium">
-            Inicia sesión
-          </Link>
+          <Link to="/login" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium">Inicia sesión</Link>
         </p>
       </div>
     </div>
