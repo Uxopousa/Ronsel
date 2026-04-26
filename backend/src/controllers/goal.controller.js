@@ -25,30 +25,4 @@ export async function remove(req, res) {
   res.status(204).end();
 }
 
-export async function addMilestone(req, res) {
-  const milestone = await goalService.addMilestone(
-    req.userId,
-    req.params.id,
-    req.body
-  );
-  res.status(201).json(milestone);
-}
 
-export async function updateMilestone(req, res) {
-  const milestone = await goalService.updateMilestone(
-    req.userId,
-    req.params.id,
-    req.params.milestoneId,
-    req.body
-  );
-  res.json(milestone);
-}
-
-export async function removeMilestone(req, res) {
-  await goalService.removeMilestone(
-    req.userId,
-    req.params.id,
-    req.params.milestoneId
-  );
-  res.status(204).end();
-}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { X } from 'lucide-react';
 
 export default function GoalModal({ goal, onSave, onClose }) {
   const isEdit = !!goal.id;
@@ -23,60 +24,67 @@ export default function GoalModal({ goal, onSave, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-        <h2 className="text-lg font-semibold mb-4">
-          {isEdit ? 'Editar objetivo' : 'Nuevo objetivo'}
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-3">
+    <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 animate-fade-in" onClick={onClose}>
+      <div className="bg-white rounded-lg shadow-modal w-full max-w-md mx-4 animate-scale-in" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 h-12 border-b border-gray-100">
+          <h2 className="text-sm font-semibold text-gray-900">
+            {isEdit ? 'Editar objetivo' : 'Nuevo objetivo'}
+          </h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <X size={16} />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
+            <label className="input-label">Título</label>
             <input
               type="text"
               required
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="input"
+              placeholder="Nombre del objetivo"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+            <label className="input-label">Descripción</label>
             <textarea
               rows={2}
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="input resize-none"
+              placeholder="Opcional"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha inicio</label>
+              <label className="input-label">Fecha inicio</label>
               <input
                 type="date"
                 required
                 value={form.startDate}
                 onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="input"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha fin</label>
+              <label className="input-label">Fecha fin</label>
               <input
                 type="date"
                 value={form.targetDate}
                 onChange={(e) => setForm({ ...form, targetDate: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="input"
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">
+          <div className="flex justify-end gap-2 pt-1">
+            <button type="button" onClick={onClose} className="btn-secondary btn-md">
               Cancelar
             </button>
-            <button type="submit" className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+            <button type="submit" className="btn-primary btn-md">
               {isEdit ? 'Guardar cambios' : 'Crear objetivo'}
             </button>
           </div>

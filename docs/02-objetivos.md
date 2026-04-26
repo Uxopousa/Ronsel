@@ -13,7 +13,7 @@ Proveer un sistema completo de gestión de tareas con prioridades, fechas límit
 Permitir al usuario definir hábitos, registrarlos diariamente y visualizar rachas (streaks) para fomentar la consistencia.
 
 ### O3 — Establecimiento de objetivos
-Facilitar la creación de objetivos con hitos medibles y seguimiento visual del progreso.
+Facilitar la creación de objetivos con tareas asociadas y seguimiento visual del progreso.
 
 ### O4 — Visión semanal
 Ofrecer una vista semanal que integre tareas pendientes, hábitos del día y progreso de objetivos, proporcionando contexto y claridad.

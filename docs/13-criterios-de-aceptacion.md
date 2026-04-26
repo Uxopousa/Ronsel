@@ -50,8 +50,8 @@ Cada criterio sigue el formato **Given-When-Then** (Dado-Cuando-Entonces) para c
 | Criterio | Descripción |
 |---|---|
 | CA-05.1 | **Dado** un usuario autenticado, **cuando** crea un objetivo con título y fechas, **entonces** el objetivo aparece en la lista con progreso 0%. |
-| CA-05.2 | **Dado** un usuario autenticado, **cuando** añade 3 hitos a un objetivo y completa 1, **entonces** el progreso mostrado es 33%. |
-| CA-05.3 | **Dado** un usuario autenticado, **cuando** completa todos los hitos de un objetivo, **entonces** el estado del objetivo cambia a "completado". |
+| CA-05.2 | **Dado** un usuario autenticado, **cuando** añade 3 tareas a un objetivo y completa 1, **entonces** el progreso mostrado es 33%. |
+| CA-05.3 | **Dado** un usuario autenticado, **cuando** completa todas las tareas de un objetivo, **entonces** el progreso mostrado es 100%. |
 | CA-05.4 | **Dado** un usuario autenticado, **cuando** asocia una tarea a un objetivo, **entonces** al ver el objetivo se muestra la tarea asociada. |
 
 ## CA-06: Dashboard

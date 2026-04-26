@@ -5,20 +5,40 @@ export async function list(userId) {
   const goals = await prisma.goal.findMany({
     where: { userId },
     orderBy: { createdAt: 'desc' },
-    include: {
-      milestones: true,
-      _count: { select: { tasks: true } },
-    },
   });
 
-  return goals.map(attachProgress);
+  const goalIds = goals.map(g => g.id);
+  const taskGroups = await prisma.task.groupBy({
+    by: ['goalId', 'status'],
+    where: { goalId: { in: goalIds } },
+    _count: { id: true },
+  });
+
+  const completedByGoal = {};
+  const totalByGoal = {};
+  for (const g of taskGroups) {
+    totalByGoal[g.goalId] = (totalByGoal[g.goalId] || 0) + g._count.id;
+    if (g.status === 'COMPLETED') {
+      completedByGoal[g.goalId] = g._count.id;
+    }
+  }
+
+  return goals.map(goal => {
+    const total = totalByGoal[goal.id] || 0;
+    const completed = completedByGoal[goal.id] || 0;
+    return {
+      ...goal,
+      progress: total > 0 ? Math.round((completed / total) * 100) : 0,
+      totalTasks: total,
+      completedTasks: completed,
+    };
+  });
 }
 
 export async function getById(userId, id) {
   const goal = await prisma.goal.findFirst({
     where: { id, userId },
     include: {
-      milestones: { orderBy: { createdAt: 'asc' } },
       tasks: {
         include: { category: { select: { id: true, name: true, color: true } } },
         orderBy: { createdAt: 'desc' },
@@ -26,15 +46,22 @@ export async function getById(userId, id) {
     },
   });
   if (!goal) throw new ApiError(404, 'Objetivo no encontrado');
-  return attachProgress(goal);
+
+  const total = goal.tasks.length;
+  const completed = goal.tasks.filter(t => t.status === 'COMPLETED').length;
+  return {
+    ...goal,
+    progress: total > 0 ? Math.round((completed / total) * 100) : 0,
+    totalTasks: total,
+    completedTasks: completed,
+  };
 }
 
 export async function create(userId, data) {
   const goal = await prisma.goal.create({
     data: { ...data, userId },
-    include: { milestones: true },
   });
-  return attachProgress(goal);
+  return { ...goal, progress: 0, totalTasks: 0, completedTasks: 0 };
 }
 
 export async function update(userId, id, data) {
@@ -44,9 +71,20 @@ export async function update(userId, id, data) {
   const updated = await prisma.goal.update({
     where: { id },
     data,
-    include: { milestones: true },
   });
-  return attachProgress(updated);
+
+  const tasks = await prisma.task.findMany({
+    where: { goalId: updated.id },
+    select: { status: true },
+  });
+  const total = tasks.length;
+  const completed = tasks.filter(t => t.status === 'COMPLETED').length;
+  return {
+    ...updated,
+    progress: total > 0 ? Math.round((completed / total) * 100) : 0,
+    totalTasks: total,
+    completedTasks: completed,
+  };
 }
 
 export async function remove(userId, id) {
@@ -54,58 +92,4 @@ export async function remove(userId, id) {
   if (!goal) throw new ApiError(404, 'Objetivo no encontrado');
 
   await prisma.goal.delete({ where: { id } });
-}
-
-export async function addMilestone(userId, goalId, data) {
-  const goal = await prisma.goal.findFirst({ where: { id: goalId, userId } });
-  if (!goal) throw new ApiError(404, 'Objetivo no encontrado');
-
-  const milestone = await prisma.goalMilestone.create({
-    data: { ...data, goalId },
-  });
-
-  return milestone;
-}
-
-export async function updateMilestone(userId, goalId, milestoneId, data) {
-  const goal = await prisma.goal.findFirst({ where: { id: goalId, userId } });
-  if (!goal) throw new ApiError(404, 'Objetivo no encontrado');
-
-  const milestone = await prisma.goalMilestone.findFirst({
-    where: { id: milestoneId, goalId },
-  });
-  if (!milestone) throw new ApiError(404, 'Hito no encontrado');
-
-  if (data.completed === true && !milestone.completed) {
-    data.completedAt = new Date();
-  }
-  if (data.completed === false) {
-    data.completedAt = null;
-  }
-
-  return prisma.goalMilestone.update({
-    where: { id: milestoneId },
-    data,
-  });
-}
-
-export async function removeMilestone(userId, goalId, milestoneId) {
-  const goal = await prisma.goal.findFirst({ where: { id: goalId, userId } });
-  if (!goal) throw new ApiError(404, 'Objetivo no encontrado');
-
-  const milestone = await prisma.goalMilestone.findFirst({
-    where: { id: milestoneId, goalId },
-  });
-  if (!milestone) throw new ApiError(404, 'Hito no encontrado');
-
-  await prisma.goalMilestone.delete({ where: { id: milestoneId } });
-}
-
-function attachProgress(goal) {
-  const total = goal.milestones.length;
-  const completed = goal.milestones.filter((m) => m.completed).length;
-  return {
-    ...goal,
-    progress: total > 0 ? Math.round((completed / total) * 100) : 0,
-  };
 }

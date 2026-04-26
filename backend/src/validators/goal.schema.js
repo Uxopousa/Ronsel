@@ -15,13 +15,4 @@ export const updateGoalSchema = z.object({
   status: z.enum(['ACTIVE', 'COMPLETED', 'CANCELLED']).optional(),
 });
 
-export const createMilestoneSchema = z.object({
-  title: z.string().min(1, 'El título es obligatorio'),
-  dueDate: z.string().datetime().optional(),
-});
 
-export const updateMilestoneSchema = z.object({
-  title: z.string().min(1).optional(),
-  completed: z.boolean().optional(),
-  dueDate: z.string().datetime().nullable().optional(),
-});

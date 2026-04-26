@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import BrandLogo from '../components/ui/BrandLogo';
+import { UserPlus } from 'lucide-react';
 
 export default function Register() {
   const { user, register } = useAuth();
@@ -17,73 +19,71 @@ export default function Register() {
       await register(form.name, form.email, form.password);
       navigate('/');
     } catch (err) {
-      setError(
-        err.response?.data?.error || 'Error al registrarse'
-      );
+      setError(err.response?.data?.error || 'Error al registrarse');
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded-xl shadow-sm w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-center text-indigo-600 mb-2">
-          Ronsel
-        </h1>
-        <p className="text-gray-500 text-center text-sm mb-6">
-          Crea tu cuenta
-        </p>
-        {error && (
-          <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
-        )}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre
-            </label>
-            <input
-              type="text"
-              required
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              required
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Contraseña
-            </label>
-            <input
-              type="password"
-              required
-              minLength={8}
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <p className="text-xs text-gray-400 mt-1">Mínimo 8 caracteres</p>
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition"
-          >
-            Crear cuenta
-          </button>
-        </form>
-        <p className="text-center text-sm text-gray-500 mt-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-sm animate-slide-up">
+        <div className="text-center mb-8">
+          <BrandLogo size={40} className="mx-auto mb-3" />
+          <h1 className="text-xl font-semibold text-gray-900">Ronsel</h1>
+          <p className="text-sm text-gray-400 mt-1">Crea tu cuenta</p>
+        </div>
+
+        <div className="card p-6">
+          {error && (
+            <div className="mb-4 px-3 py-2 bg-red-50 border border-red-100 rounded-md text-xs text-red-600">
+              {error}
+            </div>
+          )}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="input-label">Nombre</label>
+              <input
+                type="text"
+                required
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                className="input"
+                placeholder="Tu nombre"
+              />
+            </div>
+            <div>
+              <label className="input-label">Email</label>
+              <input
+                type="email"
+                required
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="input"
+                placeholder="tu@email.com"
+              />
+            </div>
+            <div>
+              <label className="input-label">Contraseña</label>
+              <input
+                type="password"
+                required
+                minLength={8}
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                className="input"
+                placeholder="••••••••"
+              />
+              <p className="text-[0.625rem] text-gray-400 mt-1">Mínimo 8 caracteres</p>
+            </div>
+            <button type="submit" className="btn-primary btn-lg w-full gap-2">
+              <UserPlus size={15} />
+              Crear cuenta
+            </button>
+          </form>
+        </div>
+
+        <p className="text-center text-xs text-gray-400 mt-6">
           ¿Ya tienes cuenta?{' '}
-          <Link to="/login" className="text-indigo-600 hover:underline">
+          <Link to="/login" className="text-primary-600 hover:text-primary-700 font-medium">
             Inicia sesión
           </Link>
         </p>

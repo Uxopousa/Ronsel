@@ -15,7 +15,7 @@ export async function getDashboard(userId) {
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setDate(endOfWeek.getDate() + 7);
 
-  const [tasksToday, pendingHabits, activeGoals, nextMilestones] =
+  const [tasksToday, pendingHabits, goals, taskGroups] =
     await Promise.all([
       prisma.task.findMany({
         where: {
@@ -35,23 +35,28 @@ export async function getDashboard(userId) {
       }),
       prisma.goal.findMany({
         where: { userId, status: 'ACTIVE' },
-        include: { milestones: { select: { id: true, completed: true } } },
       }),
-      prisma.goalMilestone.findMany({
+      prisma.task.groupBy({
+        by: ['goalId', 'status'],
         where: {
           goal: { userId, status: 'ACTIVE' },
-          completed: false,
-          dueDate: { not: null },
         },
-        orderBy: { dueDate: 'asc' },
-        take: 5,
-        include: { goal: { select: { title: true } } },
+        _count: { id: true },
       }),
     ]);
 
-  const goalsWithProgress = activeGoals.map((goal) => {
-    const total = goal.milestones.length;
-    const completed = goal.milestones.filter((m) => m.completed).length;
+  const completedByGoal = {};
+  const totalByGoal = {};
+  for (const g of taskGroups) {
+    totalByGoal[g.goalId] = (totalByGoal[g.goalId] || 0) + g._count.id;
+    if (g.status === 'COMPLETED') {
+      completedByGoal[g.goalId] = g._count.id;
+    }
+  }
+
+  const goalsWithProgress = goals.map((goal) => {
+    const total = totalByGoal[goal.id] || 0;
+    const completed = completedByGoal[goal.id] || 0;
     return {
       id: goal.id,
       title: goal.title,
@@ -94,7 +99,6 @@ export async function getDashboard(userId) {
     tasksToday,
     pendingHabits,
     activeGoals: goalsWithProgress,
-    nextMilestones,
     week: weeklyTasksByDay,
   };
 }

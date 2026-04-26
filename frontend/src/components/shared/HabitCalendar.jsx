@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as habitService from '../../services/habits';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const months = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -33,56 +34,64 @@ export default function HabitCalendar({ habit, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">{habit.name}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">✕</button>
+    <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 animate-fade-in" onClick={onClose}>
+      <div className="bg-white rounded-lg shadow-modal w-full max-w-sm mx-4 animate-scale-in" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 h-12 border-b border-gray-100">
+          <h2 className="text-sm font-semibold text-gray-900">{habit.name}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <X size={16} />
+          </button>
         </div>
 
-        <div className="flex items-center justify-between mb-3">
-          <button onClick={prevMonth} className="text-gray-400 hover:text-gray-600 px-2">◀</button>
-          <span className="text-sm font-medium">
-            {months[month - 1]} {year}
-          </span>
-          <button onClick={nextMonth} className="text-gray-400 hover:text-gray-600 px-2">▶</button>
-        </div>
+        <div className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <button onClick={prevMonth} className="btn-ghost btn-sm p-1.5">
+              <ChevronLeft size={16} />
+            </button>
+            <span className="text-sm font-medium text-gray-700">
+              {months[month - 1]} {year}
+            </span>
+            <button onClick={nextMonth} className="btn-ghost btn-sm p-1.5">
+              <ChevronRight size={16} />
+            </button>
+          </div>
 
-        <div className="grid grid-cols-7 gap-1 text-center">
-          {weekDays.map((d) => (
-            <div key={d} className="text-xs text-gray-400 py-1">{d}</div>
-          ))}
+          <div className="grid grid-cols-7 gap-1 text-center">
+            {weekDays.map((d) => (
+              <div key={d} className="text-2xs text-gray-400 font-medium py-1">{d}</div>
+            ))}
 
-          {Array.from({ length: startOffset }).map((_, i) => (
-            <div key={`empty-${i}`} />
-          ))}
+            {Array.from({ length: startOffset }).map((_, i) => (
+              <div key={`empty-${i}`} />
+            ))}
 
-          {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
-            const isCompleted = days.days?.[day];
-            return (
-              <div
-                key={day}
-                className={`py-2 text-sm rounded-full ${
-                  isCompleted === true
-                    ? 'bg-emerald-500 text-white'
-                    : isCompleted === false
-                    ? 'bg-red-100 text-red-500'
-                    : 'text-gray-600'
-                }`}
-              >
-                {day}
-              </div>
-            );
-          })}
-        </div>
+            {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
+              const isCompleted = days.days?.[day];
+              return (
+                <div
+                  key={day}
+                  className={`py-1.5 text-xs rounded-md transition-colors ${
+                    isCompleted === true
+                      ? 'bg-green-500 text-white font-medium'
+                      : isCompleted === false
+                      ? 'bg-red-50 text-red-500'
+                      : 'text-gray-600'
+                  }`}
+                >
+                  {day}
+                </div>
+              );
+            })}
+          </div>
 
-        <div className="flex gap-4 justify-center mt-4 text-xs text-gray-500">
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" /> Completado
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-full bg-gray-200 inline-block" /> Sin registro
-          </span>
+          <div className="flex gap-4 justify-center mt-4 text-2xs text-gray-400">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-sm bg-green-500 inline-block" /> Completado
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-sm bg-gray-100 border border-gray-200 inline-block" /> Sin registro
+            </span>
+          </div>
         </div>
       </div>
     </div>

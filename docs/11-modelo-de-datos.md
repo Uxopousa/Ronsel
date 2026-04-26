@@ -73,22 +73,7 @@
        │    │ userId (FK)                 │
        │    │ createdAt                   │
        │    │ updatedAt                   │
-       │    └──────────────┬───────────────┘
-       │                   │
-       │                 1 │
-       │                   │
-       │    ┌──────────────┴───────────────┐
-       │    │  GoalMilestone (Milestone)   │
-       │    ├──────────────────────────────┤
-       │    │ id (PK)                     │
-       │    │ goalId (FK)                 │
-       │    │ title                       │
-       │    │ completed: boolean          │
-       │    │ dueDate?                    │
-       │    │ completedAt?                │
-       │    │ createdAt                   │
-       └────│  updatedAt                   │
-            └──────────────────────────────┘
+        │    └───────────────────────────────┘
 ```
 
 ## Esquema Prisma
@@ -225,26 +210,10 @@ model Goal {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  milestones GoalMilestone[]
+  user       User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   tasks      Task[]
 
   @@index([userId, status])
-}
-
-model GoalMilestone {
-  id          String   @id @default(cuid())
-  goalId      String
-  title       String
-  completed   Boolean  @default(false)
-  dueDate     DateTime?
-  completedAt DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
-
-  @@index([goalId])
 }
 ```
 
@@ -258,7 +227,6 @@ model GoalMilestone {
 | Habit | `[userId]` |
 | HabitLog | `[habitId, date]` (unique compuesto), `[habitId, date]` |
 | Goal | `[userId, status]` |
-| GoalMilestone | `[goalId]` |
 
 ## Relaciones clave
 
@@ -269,7 +237,6 @@ model GoalMilestone {
 | User → Goal | 1:N | Un usuario puede tener muchos objetivos |
 | User → Category | 1:N | Un usuario puede tener muchas categorías |
 | Habit → HabitLog | 1:N | Un hábito tiene muchos registros diarios |
-| Goal → GoalMilestone | 1:N | Un objetivo tiene muchos hitos |
 | Goal → Task | 1:N | Un objetivo puede tener muchas tareas asociadas |
 | Category → Task | 1:N | Una categoría puede tener muchas tareas |
 | Category → Habit | 1:N | Una categoría puede tener muchos hábitos |

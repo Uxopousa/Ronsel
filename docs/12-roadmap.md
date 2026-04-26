@@ -62,13 +62,13 @@ Módulo de objetivos completo + dashboard que integra todo.
 
 ### Tareas
 - [x] CRUD de objetivos (backend + frontend)
-- [x] CRUD de hitos (backend + frontend)
+- [x] CRUD de objetivos con progreso por tareas
 - [x] Progreso automático (%)
 - [x] Asociar tareas a objetivos (visualización)
 - [x] Dashboard: vista de hoy (frontend)
 - [x] Dashboard: vista semanal (frontend)
 - [x] Resumen de objetivos activos en dashboard
-- [x] Próximos hitos en dashboard
+- [x] Dashboard unificado con objetivos activos, tareas y hábitos
 
 ### Hito
 ✅ MVP funcional: usuario puede gestionar tareas, hábitos, objetivos y ver su semana.

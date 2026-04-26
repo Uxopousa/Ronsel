@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { X } from 'lucide-react';
 
 export default function TaskModal({ task, categories, goals, onSave, onClose }) {
   const isEdit = !!task.id;
@@ -31,41 +32,52 @@ export default function TaskModal({ task, categories, goals, onSave, onClose }) 
   }
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-        <h2 className="text-lg font-semibold mb-4">
-          {isEdit ? 'Editar tarea' : 'Nueva tarea'}
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-3">
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+    <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 animate-fade-in" onClick={onClose}>
+      <div className="bg-white rounded-lg shadow-modal w-full max-w-md mx-4 animate-scale-in" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 h-12 border-b border-gray-100">
+          <h2 className="text-sm font-semibold text-gray-900">
+            {isEdit ? 'Editar tarea' : 'Nueva tarea'}
+          </h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <X size={16} />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          {error && (
+            <div className="px-3 py-2 bg-red-50 border border-red-100 rounded-md text-xs text-red-600">
+              {error}
+            </div>
+          )}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
+            <label className="input-label">Título</label>
             <input
               type="text"
               required
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="input"
+              placeholder="¿Qué tienes que hacer?"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+            <label className="input-label">Descripción</label>
             <textarea
               rows={2}
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="input resize-none"
+              placeholder="Opcional"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Prioridad</label>
+              <label className="input-label">Prioridad</label>
               <select
                 value={form.priority}
                 onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="select text-sm"
               >
                 <option value="LOW">Baja</option>
                 <option value="MEDIUM">Media</option>
@@ -74,22 +86,22 @@ export default function TaskModal({ task, categories, goals, onSave, onClose }) 
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha límite</label>
+              <label className="input-label">Fecha límite</label>
               <input
                 type="date"
                 value={form.dueDate}
                 onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="input"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+            <label className="input-label">Categoría</label>
             <select
               value={form.categoryId}
               onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="select text-sm"
             >
               <option value="">Sin categoría</option>
               {categories.map((cat) => (
@@ -99,11 +111,11 @@ export default function TaskModal({ task, categories, goals, onSave, onClose }) 
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Objetivo</label>
+            <label className="input-label">Objetivo</label>
             <select
               value={form.goalId}
               onChange={(e) => setForm({ ...form, goalId: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="select text-sm"
             >
               <option value="">Sin objetivo</option>
               {(goals || []).map((g) => (
@@ -112,11 +124,11 @@ export default function TaskModal({ task, categories, goals, onSave, onClose }) 
             </select>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">
+          <div className="flex justify-end gap-2 pt-1">
+            <button type="button" onClick={onClose} className="btn-secondary btn-md">
               Cancelar
             </button>
-            <button type="submit" className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+            <button type="submit" className="btn-primary btn-md">
               {isEdit ? 'Guardar cambios' : 'Crear tarea'}
             </button>
           </div>

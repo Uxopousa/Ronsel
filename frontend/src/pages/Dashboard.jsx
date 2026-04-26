@@ -1,130 +1,471 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  ListTodo,
+  Flame,
+  Target,
+  ChevronRight,
+  ChevronLeft,
+  CalendarDays,
+  AlertCircle,
+  Plus,
+  ChevronDown,
+  ChevronUp,
+  X,
+} from 'lucide-react';
 import api from '../services/api';
+import * as taskService from '../services/tasks';
+import TaskModal from '../components/shared/TaskModal';
+import { useToast } from '../components/ui/Toast';
 
 const weekDays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState('week');
+  const [calDate, setCalDate] = useState(new Date());
+  const [monthTasks, setMonthTasks] = useState({});
+  const [dayPanel, setDayPanel] = useState(null);
+  const [goalExpanded, setGoalExpanded] = useState({});
+  const [quickTask, setQuickTask] = useState(null);
+  const addToast = useToast();
+
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
 
   useEffect(() => {
-    api.get('/dashboard').then((res) => setData(res.data)).catch(() => {})
+    api.get('/dashboard').then(res => setData(res.data)).catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p className="text-gray-400">Cargando...</p>;
-  if (!data) return <p className="text-gray-400">Error al cargar el dashboard.</p>;
+  const loadMonthTasks = useCallback(async (year, month) => {
+    try {
+      const from = `${year}-${String(month).padStart(2, '0')}-01`;
+      const lastDay = new Date(year, month, 0).getDate();
+      const to = `${year}-${String(month).padStart(2, '0')}-${lastDay}`;
+      const tasks = await taskService.getTasks({ dueDateFrom: from, dueDateTo: to });
+      const grouped = {};
+      for (const t of tasks) {
+        if (!t.dueDate) continue;
+        const d = t.dueDate.slice(0, 10);
+        if (!grouped[d]) grouped[d] = [];
+        grouped[d].push(t);
+      }
+      setMonthTasks(grouped);
+    } catch {
+      addToast('Error al cargar tareas del mes', 'error');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (view === 'month') {
+      loadMonthTasks(calDate.getFullYear(), calDate.getMonth() + 1);
+    }
+  }, [view, calDate, loadMonthTasks]);
+
+  if (loading) return <p className="text-gray-400 text-sm">Cargando...</p>;
+  if (!data) return <p className="text-gray-400 text-sm">Error al cargar el dashboard.</p>;
+
+  const overdue = (data.tasksToday || []).filter(t => t.dueDate && t.dueDate.slice(0, 10) < todayStr);
+  const todayTasks = (data.tasksToday || []).filter(t => !t.dueDate || t.dueDate.slice(0, 10) === todayStr);
+  const pendingHabits = data.pendingHabits || [];
+
+  function toggleGoal(id) {
+    setGoalExpanded(prev => ({ ...prev, [id]: !prev[id] }));
+  }
+
+  function navMonth(dir) {
+    const d = new Date(calDate);
+    d.setMonth(d.getMonth() + dir);
+    setCalDate(d);
+  }
+
+  function handleDayClick(dateStr, tasks) {
+    setDayPanel({ date: dateStr, tasks: tasks || [] });
+  }
+
+  const hasContent = data.tasksToday?.length || pendingHabits.length || data.activeGoals?.length;
+
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Inicio</h1>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <SummaryCard title="Tareas hoy" count={data.tasksToday?.length || 0} link="/tasks" color="indigo" />
-        <SummaryCard title="Hábitos pendientes" count={data.pendingHabits?.length || 0} link="/habits" color="emerald" />
-        <SummaryCard title="Objetivos activos" count={data.activeGoals?.length || 0} link="/goals" color="amber" />
+    <div className="max-w-5xl">
+      {/* Hoy section */}
+      <div className="flex items-center justify-between mb-5">
+        <h1 className="text-lg font-semibold text-gray-900">
+          Hoy, {today.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+        </h1>
       </div>
 
-      {data.nextMilestones?.length > 0 && (
-        <section className="mb-8">
-          <h2 className="text-lg font-semibold mb-3">Próximos hitos</h2>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 space-y-2">
-            {data.nextMilestones.map((m) => (
-              <div key={m.id} className="flex items-center gap-2 text-sm">
-                <span className="w-2 h-2 rounded-full bg-amber-400" />
-                <span className="text-gray-600">{m.title}</span>
-                <span className="text-xs text-gray-400 ml-auto">
-                  {m.goal.title} · {new Date(m.dueDate).toLocaleDateString('es-ES')}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+        <SummaryCard
+          title="Pendientes"
+          count={todayTasks.length}
+          detail={overdue.length > 0 ? `${overdue.length} vencidas` : null}
+          link="/tasks?filter=today"
+          icon={ListTodo}
+          color="primary"
+        />
+        <SummaryCard
+          title="Hábitos"
+          count={pendingHabits.length}
+          detail={null}
+          link="/habits"
+          icon={Flame}
+          color="amber"
+        />
+        <SummaryCard
+          title="Objetivos activos"
+          count={data.activeGoals?.length || 0}
+          link="/goals"
+          icon={Target}
+          color="primary"
+        />
+      </div>
 
-      {data.week && (
-        <section className="mb-8">
-          <h2 className="text-lg font-semibold mb-3">Vista semanal</h2>
-          <div className="grid grid-cols-7 gap-2">
-            {data.week.map((day) => {
-              const date = new Date(day.date + 'T00:00:00');
-              const isToday = date.toDateString() === new Date().toDateString();
-              return (
-                <div
-                  key={day.date}
-                  className={`bg-white rounded-lg p-2 shadow-sm border min-h-[100px] ${
-                    isToday ? 'border-indigo-400 ring-1 ring-indigo-200' : 'border-gray-100'
-                  }`}
-                >
-                  <p className="text-xs font-medium text-gray-500 mb-1">
-                    {weekDays[date.getDay() === 0 ? 6 : date.getDay() - 1]}
-                  </p>
-                  <p className="text-xs text-gray-400 mb-2">
-                    {date.getDate()}
-                  </p>
-                  <div className="space-y-1">
-                    {day.tasks.slice(0, 3).map((t) => (
-                      <div
-                        key={t.id}
-                        className={`text-[10px] px-1.5 py-0.5 rounded truncate ${
-                          t.status === 'COMPLETED'
-                            ? 'bg-emerald-50 text-emerald-600 line-through'
-                            : 'bg-indigo-50 text-indigo-700'
-                        }`}
-                      >
-                        {t.title}
-                      </div>
-                    ))}
-                    {day.tasks.length > 3 && (
-                      <p className="text-[10px] text-gray-400">+{day.tasks.length - 3} más</p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {data.activeGoals?.length > 0 && (
-        <section>
-          <h2 className="text-lg font-semibold mb-3">Objetivos activos</h2>
-          <div className="space-y-3">
-            {data.activeGoals.map((goal) => (
-              <div key={goal.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                <div className="flex justify-between mb-2">
-                  <span className="font-medium">{goal.title}</span>
-                  <span className="text-sm text-gray-500">{goal.progress}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-indigo-600 h-2 rounded-full transition-all"
-                    style={{ width: `${goal.progress}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {!data.tasksToday?.length && !data.pendingHabits?.length && !data.activeGoals?.length && (
-        <div className="text-center py-12">
-          <p className="text-gray-400 mb-4">Bienvenido a Ronsel. No tienes nada pendiente hoy.</p>
-          <Link to="/tasks" className="text-sm text-indigo-600 hover:underline">Crear tu primera tarea</Link>
+      {/* Overdue alert */}
+      {overdue.length > 0 && (
+        <div className="flex items-center gap-2.5 px-4 py-3 mb-6 bg-red-50 border border-red-100 rounded-md text-sm text-red-700">
+          <AlertCircle size={16} className="flex-shrink-0" />
+          <span className="flex-1">{overdue.length} tarea{overdue.length !== 1 ? 's' : ''} vencida{overdue.length !== 1 ? 's' : ''}</span>
+          <Link to="/tasks?filter=overdue" className="text-xs font-medium hover:underline">Ver</Link>
         </div>
+      )}
+
+      {/* Today's tasks */}
+      {todayTasks.length > 0 && (
+        <section className="mb-6">
+          <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Tareas de hoy ({todayTasks.length})
+          </h2>
+          <div className="card divide-y divide-gray-50">
+            {todayTasks.map(t => (
+              <div key={t.id} className="flex items-center gap-3 px-4 py-2.5">
+                <div className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 ${
+                  t.status === 'COMPLETED' ? 'bg-green-500 border-green-500' : 'border-gray-300'
+                }`} />
+                <span className={`text-sm flex-1 truncate ${t.status === 'COMPLETED' ? 'line-through text-gray-400' : 'text-gray-900'}`}>
+                  {t.title}
+                </span>
+                {t.category && (
+                  <span className="text-[0.625rem] px-1.5 py-0.5 rounded-sm font-medium"
+                    style={{ backgroundColor: t.category.color + '18', color: t.category.color }}>
+                    {t.category.name}
+                  </span>
+                )}
+                {t.dueDate && t.dueDate.slice(0, 10) < todayStr && (
+                  <span className="text-[0.625rem] text-red-500 font-medium">Vencida</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Pending habits */}
+      {pendingHabits.length > 0 && (
+        <section className="mb-6">
+          <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Hábitos pendientes ({pendingHabits.length})
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {pendingHabits.map(h => (
+              <div key={h.id} className="card px-3 py-2 flex items-center gap-2 text-sm">
+                <Flame size={14} className="text-orange-400" />
+                <span className="text-gray-700">{h.name}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Calendar: Week / Month toggle */}
+      <section className="mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Calendario</h2>
+          <div className="flex bg-gray-100 rounded-md p-0.5 gap-0.5">
+            <button
+              onClick={() => setView('week')}
+              className={`px-2.5 py-1 text-xs rounded font-medium transition-colors ${
+                view === 'week' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Semana
+            </button>
+            <button
+              onClick={() => setView('month')}
+              className={`px-2.5 py-1 text-xs rounded font-medium transition-colors ${
+                view === 'month' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Mes
+            </button>
+          </div>
+        </div>
+
+        {view === 'week' ? (
+          <WeekView data={data} todayStr={todayStr} onDayClick={handleDayClick} />
+        ) : (
+          <MonthView
+            date={calDate}
+            monthTasks={monthTasks}
+            todayStr={todayStr}
+            onPrev={() => navMonth(-1)}
+            onNext={() => navMonth(1)}
+            onDayClick={handleDayClick}
+          />
+        )}
+      </section>
+
+      {/* Day detail panel */}
+      {dayPanel && (
+        <DayPanel
+          date={dayPanel.date}
+          tasks={dayPanel.tasks}
+          onClose={() => setDayPanel(null)}
+          onQuickTask={() => setQuickTask({ dueDate: dayPanel.date })}
+        />
+      )}
+
+      {/* Active goals */}
+      {data.activeGoals?.length > 0 && (
+        <section className="mb-6">
+          <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Objetivos activos</h2>
+          <div className="space-y-1.5">
+            {data.activeGoals.map(goal => (
+              <div key={goal.id} className="card overflow-hidden">
+                <button
+                  onClick={() => toggleGoal(goal.id)}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
+                >
+                  <Target size={16} className="text-primary-600 flex-shrink-0" />
+                  <span className="text-sm font-medium text-gray-900 flex-1 truncate">{goal.title}</span>
+                  <span className="text-xs text-gray-400 tabular-nums">{goal.progress}%</span>
+                  <div className="w-20 bg-gray-100 rounded-full h-1.5">
+                    <div className="bg-primary-500 h-1.5 rounded-full transition-all" style={{ width: `${goal.progress}%` }} />
+                  </div>
+                  {goalExpanded[goal.id] ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
+                </button>
+                {goalExpanded[goal.id] && (
+                  <div className="px-4 pb-3 pt-1 border-t border-gray-50">
+                    <p className="text-xs text-gray-400 mb-2">
+                      {goal.totalTasks || 0} tareas · {goal.completedTasks || 0} completadas
+                      {goal.targetDate && ` · Hasta ${new Date(goal.targetDate).toLocaleDateString('es-ES')}`}
+                    </p>
+                    <Link to="/goals" className="text-xs text-primary-600 hover:text-primary-700 font-medium">
+                      Ver detalle
+                    </Link>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Empty state */}
+      {!hasContent && (
+        <div className="text-center py-16">
+          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mx-auto mb-3">
+            <ListTodo size={20} className="text-gray-400" />
+          </div>
+          <p className="text-sm text-gray-400 mb-4">Bienvenido a Ronsel. No tienes nada pendiente hoy.</p>
+          <Link to="/tasks" className="btn-primary btn-md">Crear tu primera tarea</Link>
+        </div>
+      )}
+
+      {quickTask !== null && (
+        <TaskModal
+          task={quickTask}
+          categories={[]}
+          goals={[]}
+          onSave={async (t) => {
+            try {
+              await taskService.createTask(t);
+              addToast('Tarea creada', 'success');
+              setQuickTask(null);
+              api.get('/dashboard').then(res => setData(res.data)).catch(() => {});
+            } catch (err) {
+              addToast(err.response?.data?.error || 'Error al crear la tarea', 'error');
+            }
+          }}
+          onClose={() => setQuickTask(null)}
+        />
       )}
     </div>
   );
 }
 
-function SummaryCard({ title, count, link, color }) {
-  const colors = { indigo: 'bg-indigo-50 text-indigo-700', emerald: 'bg-emerald-50 text-emerald-700', amber: 'bg-amber-50 text-amber-700' };
+function SummaryCard({ title, count, detail, link, icon: Icon, color }) {
+  const colors = {
+    primary: 'bg-primary-50 text-primary-600',
+    amber: 'bg-orange-50 text-orange-600',
+  };
   return (
-    <Link to={link} className={`p-4 rounded-xl ${colors[color]} hover:brightness-95 transition block`}>
-      <p className="text-3xl font-bold">{count}</p>
-      <p className="text-sm mt-1">{title}</p>
+    <Link to={link} className={`card p-4 flex items-center gap-3 hover:shadow-card-hover transition-shadow`}>
+      <div className={`w-9 h-9 rounded-md ${colors[color]} flex items-center justify-center flex-shrink-0`}>
+        <Icon size={16} strokeWidth={2} />
+      </div>
+      <div>
+        <p className="text-xl font-semibold text-gray-900 leading-none">{count}</p>
+        <p className="text-xs text-gray-400 mt-0.5">{title}</p>
+        {detail && <p className="text-[0.625rem] text-gray-400 mt-0.5">{detail}</p>}
+      </div>
+      <ChevronRight size={14} className="text-gray-300 ml-auto flex-shrink-0" />
     </Link>
+  );
+}
+
+function WeekView({ data, todayStr, onDayClick }) {
+  if (!data.week) return null;
+  return (
+    <div className="grid grid-cols-7 gap-1.5">
+      {data.week.map(day => {
+        const date = new Date(day.date + 'T00:00:00');
+        const isToday = day.date === todayStr;
+        return (
+          <button
+            key={day.date}
+            onClick={() => onDayClick(day.date, day.tasks)}
+            className={`rounded-md p-2 min-h-[80px] text-left transition-all ${
+              isToday ? 'ring-1 ring-primary-300 bg-white' : 'bg-white hover:shadow-card-hover'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[0.625rem] text-gray-400 font-medium">
+                {weekDays[date.getDay() === 0 ? 6 : date.getDay() - 1]}
+              </span>
+              <span className={`text-xs font-medium ${isToday ? 'text-primary-600' : 'text-gray-500'}`}>
+                {date.getDate()}
+              </span>
+            </div>
+            <div className="space-y-0.5">
+              {day.tasks.slice(0, 3).map(t => (
+                <div key={t.id} className={`text-[0.625rem] px-1 py-0.5 rounded truncate leading-tight ${
+                  t.status === 'COMPLETED' ? 'bg-green-50 text-green-700 line-through' : 'bg-primary-50 text-primary-700'
+                }`}>
+                  {t.title}
+                </div>
+              ))}
+              {day.tasks.length > 3 && (
+                <p className="text-[0.625rem] text-gray-400">+{day.tasks.length - 3} más</p>
+              )}
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function MonthView({ date, monthTasks, todayStr, onPrev, onNext, onDayClick }) {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const firstDay = new Date(year, month - 1, 1).getDay();
+  const startOffset = firstDay === 0 ? 6 : firstDay - 1;
+
+  return (
+    <div className="card p-3">
+      <div className="flex items-center justify-between mb-3">
+        <button onClick={onPrev} className="btn-ghost btn-sm p-1.5">
+          <ChevronLeft size={16} />
+        </button>
+        <span className="text-sm font-medium text-gray-700">{months[month - 1]} {year}</span>
+        <button onClick={onNext} className="btn-ghost btn-sm p-1.5">
+          <ChevronRight size={16} />
+        </button>
+      </div>
+      <div className="grid grid-cols-7 gap-0.5">
+        {weekDays.map(d => (
+          <div key={d} className="text-[0.625rem] text-gray-400 font-medium text-center py-1">{d}</div>
+        ))}
+        {Array.from({ length: startOffset }).map((_, i) => <div key={`e${i}`} />)}
+        {Array.from({ length: daysInMonth }, (_, i) => {
+          const day = i + 1;
+          const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const isToday = dateStr === todayStr;
+          const dayTasks = monthTasks[dateStr] || [];
+          return (
+            <button
+              key={day}
+              onClick={() => onDayClick(dateStr, dayTasks)}
+              className={`p-1.5 rounded-md text-left min-h-[56px] transition-all hover:bg-gray-50 ${
+                isToday ? 'ring-1 ring-primary-300 bg-primary-50/30' : ''
+              }`}
+            >
+              <span className={`text-xs font-medium ${isToday ? 'text-primary-600' : 'text-gray-600'}`}>
+                {day}
+              </span>
+              {dayTasks.length > 0 && (
+                <div className="mt-0.5 space-y-0.5">
+                  {dayTasks.slice(0, 2).map(t => (
+                    <div key={t.id} className={`text-[0.5rem] px-0.5 py-0.5 rounded truncate leading-tight ${
+                      t.status === 'COMPLETED' ? 'bg-green-50 text-green-700' : 'bg-primary-50 text-primary-700'
+                    }`}>
+                      {t.title}
+                    </div>
+                  ))}
+                  {dayTasks.length > 2 && (
+                    <p className="text-[0.5rem] text-gray-400">+{dayTasks.length - 2}</p>
+                  )}
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function DayPanel({ date, tasks, onClose, onQuickTask }) {
+  const d = new Date(date + 'T00:00:00');
+  const dayName = dayNames[d.getDay()];
+  const displayDate = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+
+  return (
+    <section className="mb-6 animate-fade-in">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          {dayName}, {displayDate}
+        </h2>
+        <div className="flex gap-2">
+          <button onClick={onQuickTask} className="btn-ghost btn-sm gap-1">
+            <Plus size={12} />
+            Tarea
+          </button>
+          <button onClick={onClose} className="btn-ghost btn-sm p-1.5">
+            <X size={14} />
+          </button>
+        </div>
+      </div>
+      {tasks.length === 0 ? (
+        <p className="text-xs text-gray-400 py-4 text-center bg-white rounded-md border border-gray-100">
+          Sin tareas para este día
+        </p>
+      ) : (
+        <div className="card divide-y divide-gray-50">
+          {tasks.map(t => (
+            <div key={t.id} className="flex items-center gap-3 px-4 py-2.5">
+              <div className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 ${
+                t.status === 'COMPLETED' ? 'bg-green-500 border-green-500' : 'border-gray-300'
+              }`} />
+              <span className={`text-sm flex-1 truncate ${t.status === 'COMPLETED' ? 'line-through text-gray-400' : 'text-gray-900'}`}>
+                {t.title}
+              </span>
+              {t.category && (
+                <span className="text-[0.625rem] px-1.5 py-0.5 rounded-sm font-medium"
+                  style={{ backgroundColor: t.category.color + '18', color: t.category.color }}>
+                  {t.category.name}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }

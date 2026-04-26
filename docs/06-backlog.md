@@ -45,11 +45,11 @@ Formato: `US-XXX` (User Story). Prioridad: 🔥 Crítica, ⚡ Alta, 🔵 Media, 
 | US-022 | Como usuario, quiero crear un objetivo con fecha de inicio y fin para planificar mis metas. | 🔥 | 3 |
 | US-023 | Como usuario, quiero editar un objetivo para actualizarlo. | 🔥 | 2 |
 | US-024 | Como usuario, quiero eliminar un objetivo si ya no es relevante. | 🔥 | 1 |
-| US-025 | Como usuario, quiero añadir hitos a un objetivo para dividirlo en pasos manejables. | ⚡ | 3 |
-| US-026 | Como usuario, quiero marcar un hito como completado para ver mi progreso. | ⚡ | 2 |
+| US-025 | Como usuario, quiero añadir tareas a un objetivo para definir los pasos necesarios. | ⚡ | 3 |
+| US-026 | Como usuario, quiero marcar una tarea como completada para ver mi progreso. | ⚡ | 2 |
 | US-027 | Como usuario, quiero ver el progreso porcentual de mis objetivos para saber cómo voy. | ⚡ | 3 |
 | US-028 | Como usuario, quiero asociar tareas a un objetivo para ver cómo contribuyen a mi meta. | 🔵 | 3 |
-| US-029 | Como usuario, quiero ver un dashboard con mi día hoy (tareas, hábitos, próximo hito) para tener contexto rápido. | 🔥 | 5 |
+| US-029 | Como usuario, quiero ver un dashboard con mi día hoy (tareas, hábitos, objetivos) para tener contexto rápido. | 🔥 | 5 |
 | US-030 | Como usuario, quiero una vista semanal que integre tareas, hábitos y objetivos para planificar mi semana. | 🔥 | 8 |
 
 ## Sprint 5 — Pulido y Despliegue (Semana 12)

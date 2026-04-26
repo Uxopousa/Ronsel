@@ -41,10 +41,10 @@
 |---|---|---|
 | RF4.1 | Crear objetivo | El usuario podrá crear objetivos con: título (obligatorio), descripción, fecha inicio, fecha fin. |
 | RF4.2 | Editar objetivo | El usuario podrá modificar cualquier campo de un objetivo existente. |
-| RF4.3 | Eliminar objetivo | El usuario podrá eliminar un objetivo y sus hitos asociados. |
-| RF4.4 | Añadir hito | El usuario podrá añadir hitos a un objetivo con título y fecha opcional. |
-| RF4.5 | Completar hito | El usuario podrá marcar un hito como completado. |
-| RF4.6 | Ver progreso | El sistema calculará el progreso como: (hitos completados / total hitos) × 100. |
+| RF4.3 | Eliminar objetivo | El usuario podrá eliminar un objetivo y sus tareas asociadas. |
+| RF4.4 | Añadir tarea | El usuario podrá añadir tareas al objetivo. |
+| RF4.5 | Completar tarea | El usuario podrá marcar una tarea como completada. |
+| RF4.6 | Ver progreso | El sistema calculará el progreso como: (tareas completadas / total tareas) × 100. |
 | RF4.7 | Asociar tareas | El usuario podrá asociar tareas existentes a un objetivo. |
 | RF4.8 | Listar objetivos | El sistema listará los objetivos del usuario con su progreso. |
 
@@ -61,6 +61,6 @@
 
 | ID | Nombre | Descripción |
 |---|---|---|
-| RF6.1 | Vista hoy | El sistema mostrará: tareas con fecha de hoy (pendientes), hábitos pendientes de hoy, próximos hitos. |
+| RF6.1 | Vista hoy | El sistema mostrará: tareas con fecha de hoy (pendientes), hábitos pendientes de hoy, objetivos activos. |
 | RF6.2 | Vista semanal | El sistema mostrará una cuadrícula semanal con tareas agrupadas por día, hábitos del día y progreso semanal de objetivos. |
 | RF6.3 | Resumen objetivos | El sistema mostrará los objetivos activos con su porcentaje de progreso. |

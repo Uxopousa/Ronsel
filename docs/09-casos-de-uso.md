@@ -75,8 +75,8 @@
 | Nombre | Gestionar objetivos |
 | Actor | Usuario autenticado |
 | Precondición | Sesión iniciada |
-| Flujo principal | 1. Usuario navega a /goals. 2. Ve lista de objetivos con progreso. 3. Puede: crear, editar, eliminar, gestionar hitos, asociar tareas. |
-| Sub-casos | CU-05.1 Crear objetivo, CU-05.2 Añadir hito, CU-05.3 Completar hito |
+| Flujo principal | 1. Usuario navega a /goals. 2. Ve lista de objetivos con progreso. 3. Puede: crear, editar, eliminar, gestionar tareas. |
+| Sub-casos | CU-05.1 Crear objetivo, CU-05.2 Añadir tarea, CU-05.3 Completar tarea |
 
 ## CU-06: Ver dashboard
 

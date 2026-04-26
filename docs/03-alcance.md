@@ -26,12 +26,11 @@
 ### Módulo de objetivos
 - CRUD de objetivos
 - Fechas de inicio y fin
-- Hitos (milestones) con estado completado/pendiente
-- Barra de progreso automática (%)
+- Barra de progreso automática basada en tareas asociadas (%)
 - Relación con tareas (una tarea puede pertenecer a un objetivo)
 
 ### Dashboard / visión general
-- Resumen del día: tareas del día, hábitos pendientes, próximo hito
+- Resumen del día: tareas del día, hábitos pendientes
 - Vista semanal con planificación
 
 ### Aspectos técnicos (MVP)

@@ -51,9 +51,9 @@
 | F4.1 | Crear objetivo (título, descripción, fechas) | ✅ |
 | F4.2 | Editar objetivo | ✅ |
 | F4.3 | Eliminar objetivo | ✅ |
-| F4.4 | Añadir hitos al objetivo | ✅ |
-| F4.5 | Marcar hito como completado | ✅ |
-| F4.6 | Ver progreso automático (%) | ✅ |
+| F4.4 | Añadir tareas al objetivo | ✅ |
+| F4.5 | Marcar tarea como completada | ✅ |
+| F4.6 | Ver progreso automático por tareas (%) | ✅ |
 | F4.7 | Asociar tareas a un objetivo | ✅ |
 | F4.8 | Filtrar tareas por objetivo | ✅ |
 
@@ -62,7 +62,7 @@
 | ID | Funcionalidad | MVP |
 |---|---|---|
 | F5.1 | Vista de hoy (tareas del día, hábitos pendientes) | ✅ |
-| F5.2 | Vista semanal (tareas + hábitos + hitos) | ✅ |
+| F5.2 | Vista semanal (tareas + hábitos + objetivos) | ✅ |
 | F5.3 | Resumen rápido de objetivos activos | ✅ |
 | F5.4 | Barra de progreso semanal | ❌ |
 | F5.5 | Vista mensual | ❌ |
