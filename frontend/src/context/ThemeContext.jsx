@@ -1,38 +1,40 @@
-import { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext(null);
+const STORAGE_KEY = 'theme';
+const MQ = '(prefers-color-scheme: dark)';
 
-function resolveTheme(theme) {
-  if (theme === 'dark') return 'dark';
-  if (theme === 'light') return 'light';
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+function getSystemDark() {
+  return window.matchMedia(MQ).matches;
 }
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'system';
-  });
+  const [preference, setPreference] = useState(() => localStorage.getItem(STORAGE_KEY) || 'system');
+  const [systemDark, setSystemDark] = useState(getSystemDark);
+
+  const isDark = preference === 'dark' ? true : preference === 'light' ? false : systemDark;
 
   useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle('dark', resolveTheme(theme) === 'dark');
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  useEffect(() => {
-    if (theme !== 'system') return;
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const mq = window.matchMedia(MQ);
     function handle(e) {
-      document.documentElement.classList.toggle('dark', e.matches);
+      setSystemDark(e.matches);
     }
     mq.addEventListener('change', handle);
     return () => mq.removeEventListener('change', handle);
-  }, [theme]);
+  }, []);
 
-  const resolved = useMemo(() => resolveTheme(theme), [theme]);
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle('dark', isDark);
+    localStorage.setItem(STORAGE_KEY, preference);
+  }, [isDark, preference]);
+
+  function setTheme(next) {
+    setPreference(next);
+  }
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, resolved }}>
+    <ThemeContext.Provider value={{ theme: preference, setTheme, resolved: isDark ? 'dark' : 'light' }}>
       {children}
     </ThemeContext.Provider>
   );
