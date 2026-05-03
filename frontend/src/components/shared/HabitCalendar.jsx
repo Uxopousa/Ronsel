@@ -25,7 +25,7 @@ export default function HabitCalendar({ habit, onClose }) {
   return (
     <div className="fixed inset-0 bg-black/20 dark:bg-black/60 flex items-center justify-center z-50 animate-fade-in" onClick={onClose}>
       <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-modal w-full max-w-sm mx-4 animate-scale-in" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 h-12 border-b border-gray-100 dark:border-neutral-800">
+        <div className="flex items-center justify-between px-5 h-12 border-b border-gray-100 dark:border-neutral-700">
           <h2 className="text-sm font-semibold text-gray-900 dark:text-neutral-100">{habit.name}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"><X size={16} /></button>
         </div>
@@ -43,7 +43,7 @@ export default function HabitCalendar({ habit, onClose }) {
               return (
                 <div key={day} className={`py-1.5 text-xs rounded-md transition-colors ${
                   isCompleted === true ? 'bg-green-500 text-white font-medium' :
-                  isCompleted === false ? 'bg-red-50 dark:bg-red-950 text-red-500 dark:text-red-400' :
+                  isCompleted === false ? 'bg-red-50 dark:bg-red-500/15 text-red-500 dark:text-red-400' :
                   'text-gray-600 dark:text-neutral-400'
                 }`}>{day}</div>
               );

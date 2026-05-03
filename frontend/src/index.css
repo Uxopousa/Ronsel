@@ -89,12 +89,12 @@
   /* ── Card ── */
   .card {
     @apply bg-white rounded-lg border border-gray-100
-           dark:bg-neutral-900 dark:border-neutral-800;
+           dark:bg-neutral-900 dark:border-neutral-700;
   }
 
   .card-hover {
     @apply card hover:border-gray-200 hover:shadow-sm
-           dark:hover:border-neutral-700;
+           dark:hover:border-neutral-600;
   }
 
   /* ── Badge / Tag ── */
@@ -108,7 +108,7 @@
 
   /* ── Divider ── */
   .divider {
-    @apply border-t border-gray-100 dark:border-neutral-800;
+    @apply border-t border-gray-100 dark:border-neutral-700;
   }
 
   /* ── Section header ── */

@@ -138,7 +138,7 @@ export default function Tasks() {
             {!search && <button onClick={() => setTaskModal({})} className="btn-primary btn-sm mt-4 gap-1.5"><Plus size={14} /> Nueva tarea</button>}
           </div>
         ) : (
-          <div className="divide-y divide-gray-50 dark:divide-neutral-800 card overflow-hidden">
+          <div className="divide-y divide-gray-50 dark:divide-neutral-700 card overflow-hidden">
             {tasks.map(task => (
               <div key={task.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50/50 dark:hover:bg-neutral-800/50 transition-colors group">
                 <button onClick={() => handleToggleComplete(task)} className={`w-4 h-4 rounded-full border-2 flex-shrink-0 transition-colors ${task.status === 'COMPLETED' ? 'bg-green-500 border-green-500' : 'border-gray-300 dark:border-neutral-600 hover:border-primary-400 dark:hover:border-primary-500'}`}>{task.status === 'COMPLETED' && <Check size={12} className="text-white" strokeWidth={3} />}</button>
@@ -173,7 +173,7 @@ export default function Tasks() {
 
 function FilterPanel({ filters, categories, goals, onChange, onClose }) {
   return (
-    <div className="absolute top-full right-0 mt-1 w-56 bg-white dark:bg-neutral-900 rounded-lg shadow-dropdown border border-gray-100 dark:border-neutral-800 p-3 z-10 animate-fade-in" onClick={e => e.stopPropagation()}>
+    <div className="absolute top-full right-0 mt-1 w-56 bg-white dark:bg-neutral-900 rounded-lg shadow-dropdown border border-gray-100 dark:border-neutral-700 p-3 z-10 animate-fade-in" onClick={e => e.stopPropagation()}>
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Filtros</span>
         <button onClick={onClose} className="text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300"><X size={12} /></button>
@@ -209,10 +209,10 @@ function CalendarView({ date, monthTasks, onPrev, onNext }) {
           const day = i + 1; const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           const isToday = dateStr === todayStr; const dayTasks = monthTasks[dateStr] || [];
           return (
-            <div key={day} className={`p-1.5 rounded-md text-left min-h-[64px] transition-all ${isToday ? 'ring-1 ring-primary-300 dark:ring-primary-600 bg-primary-50/30 dark:bg-primary-950/30' : 'hover:bg-gray-50 dark:hover:bg-neutral-800'}`}>
+            <div key={day} className={`p-1.5 rounded-md text-left min-h-[64px] transition-all ${isToday ? 'ring-1 ring-primary-300 dark:ring-primary-500 bg-primary-50/30 dark:bg-primary-500/10' : 'hover:bg-gray-50 dark:hover:bg-neutral-800'}`}>
               <span className={`text-xs font-medium ${isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-600 dark:text-neutral-400'}`}>{day}</span>
               <div className="mt-0.5 space-y-0.5">
-                {dayTasks.slice(0, 2).map(t => <div key={t.id} className={`text-[0.5rem] px-0.5 py-0.5 rounded truncate leading-tight ${t.status === 'COMPLETED' ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300' : 'bg-primary-50 dark:bg-primary-950 text-primary-700 dark:text-primary-300'}`}>{t.title}</div>)}
+                {dayTasks.slice(0, 2).map(t => <div key={t.id} className={`text-[0.5rem] px-0.5 py-0.5 rounded truncate leading-tight ${t.status === 'COMPLETED' ? 'bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-300' : 'bg-primary-50 dark:bg-primary-500/15 text-primary-700 dark:text-primary-300'}`}>{t.title}</div>)}
                 {dayTasks.length > 2 && <p className="text-[0.5rem] text-gray-400 dark:text-neutral-500">+{dayTasks.length - 2}</p>}
               </div>
             </div>

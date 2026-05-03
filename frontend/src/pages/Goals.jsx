@@ -100,7 +100,7 @@ export default function Goals() {
               </button>
 
               {isExpanded && (
-                <div className="px-4 pb-4 pt-2 border-t border-gray-50 dark:border-neutral-800 animate-fade-in">
+                <div className="px-4 pb-4 pt-2 border-t border-gray-50 dark:border-neutral-700 animate-fade-in">
                   <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-neutral-500 mb-3">
                     <span>Progreso: <strong className="text-gray-600 dark:text-neutral-300">{prog.completed}/{prog.total} tareas</strong></span>
                     {goal.targetDate && (<><span>·</span><span>Hasta {new Date(goal.targetDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</span></>)}
@@ -126,7 +126,7 @@ export default function Goals() {
                     <button onClick={() => handleAddTask(goal.id)} className="btn-primary btn-sm px-2.5"><PlusIcon size={14} /></button>
                   </div>
 
-                  <div className="flex gap-2 mt-3 pt-2 border-t border-gray-50 dark:border-neutral-800">
+                  <div className="flex gap-2 mt-3 pt-2 border-t border-gray-50 dark:border-neutral-700">
                     <button onClick={() => setModal(goal)} className="btn-ghost btn-sm text-xs">Editar objetivo</button>
                     <button onClick={() => handleDelete(goal.id)} className="btn-ghost btn-sm text-xs hover:text-red-500 dark:hover:text-red-400">Eliminar</button>
                   </div>

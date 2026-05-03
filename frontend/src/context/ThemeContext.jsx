@@ -1,21 +1,21 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 
 const ThemeContext = createContext(null);
 
+function resolveTheme(theme) {
+  if (theme === 'dark') return 'dark';
+  if (theme === 'light') return 'light';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
-    if (localStorage.getItem('theme') === 'dark') return 'dark';
-    if (localStorage.getItem('theme') === 'light') return 'light';
-    return 'system';
+    return localStorage.getItem('theme') || 'system';
   });
 
   useEffect(() => {
     const root = document.documentElement;
-    const isDark =
-      theme === 'dark' ||
-      (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-    root.classList.toggle('dark', isDark);
+    root.classList.toggle('dark', resolveTheme(theme) === 'dark');
     localStorage.setItem('theme', theme);
   }, [theme]);
 
@@ -29,8 +29,10 @@ export function ThemeProvider({ children }) {
     return () => mq.removeEventListener('change', handle);
   }, [theme]);
 
+  const resolved = useMemo(() => resolveTheme(theme), [theme]);
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, resolved }}>
       {children}
     </ThemeContext.Provider>
   );

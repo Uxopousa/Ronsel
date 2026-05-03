@@ -89,7 +89,7 @@ export default function Habits() {
 }
 
 function StatCard({ icon: Icon, value, label, color }) {
-  const colors = { primary: 'bg-primary-50 dark:bg-primary-950 text-primary-600 dark:text-primary-400', green: 'bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400', orange: 'bg-orange-50 dark:bg-orange-950 text-orange-600 dark:text-orange-400' };
+  const colors = { primary: 'bg-primary-50 dark:bg-primary-500/15 text-primary-600 dark:text-primary-300', green: 'bg-green-50 dark:bg-green-500/15 text-green-600 dark:text-green-300', orange: 'bg-orange-50 dark:bg-orange-500/15 text-orange-600 dark:text-orange-300' };
   return (
     <div className="card p-3 flex items-center gap-3">
       <div className={`w-8 h-8 rounded-md ${colors[color]} flex items-center justify-center flex-shrink-0`}><Icon size={15} /></div>
@@ -103,7 +103,7 @@ function HabitCard({ habit, expanded, onToggle, onEdit, onDelete, onExpand }) {
     <div className="card overflow-hidden">
       <div className="flex items-center gap-3 px-4 py-3">
         <button onClick={onToggle}
-          className={`w-7 h-7 rounded-md flex items-center justify-center transition-all flex-shrink-0 ${habit.completedToday ? 'bg-green-500 text-white shadow-sm' : 'bg-gray-50 dark:bg-neutral-800 text-gray-400 dark:text-neutral-500 hover:bg-green-50 dark:hover:bg-green-950 hover:text-green-500 dark:hover:text-green-400 border border-gray-100 dark:border-neutral-700'}`}>
+          className={`w-7 h-7 rounded-md flex items-center justify-center transition-all flex-shrink-0 ${habit.completedToday ? 'bg-green-500 text-white shadow-sm' : 'bg-gray-50 dark:bg-neutral-800 text-gray-400 dark:text-neutral-500 hover:bg-green-50 dark:hover:bg-green-500/15 hover:text-green-500 dark:hover:text-green-400 border border-gray-100 dark:border-neutral-700'}`}>
           <Check size={14} strokeWidth={habit.completedToday ? 3 : 2} />
         </button>
         <div className="flex-1 min-w-0">
@@ -158,7 +158,7 @@ function HabitCalendarInline({ habitId }) {
   const todayStr = new Date().toISOString().slice(0, 10);
 
   return (
-    <div className="px-4 pb-4 pt-3 border-t border-gray-50 dark:border-neutral-800 animate-fade-in">
+    <div className="px-4 pb-4 pt-3 border-t border-gray-50 dark:border-neutral-700 animate-fade-in">
       <div className="flex items-center justify-between mb-2">
         <div className="flex gap-1">
           <button onClick={() => { if (month === 1) { setYear(y => y - 1); setMonth(12); } else setMonth(m => m - 1); }} className="btn-ghost btn-sm p-1"><ChevronDown size={12} className="rotate-90" /></button>
@@ -175,7 +175,7 @@ function HabitCalendarInline({ habitId }) {
           const isToday = dateStr === todayStr;
           const completed = days.days?.[day];
           return (
-            <div key={day} className={`py-1 text-center text-xs rounded-sm ${completed === true ? 'bg-green-500 text-white font-medium' : completed === false ? 'bg-red-50 dark:bg-red-950 text-red-500 dark:text-red-400' : 'text-gray-500 dark:text-neutral-400'} ${isToday ? 'ring-1 ring-primary-300 dark:ring-primary-600' : ''}`}>{day}</div>
+            <div key={day} className={`py-1 text-center text-xs rounded-sm ${completed === true ? 'bg-green-500 text-white font-medium' : completed === false ? 'bg-red-50 dark:bg-red-500/15 text-red-500 dark:text-red-400' : 'text-gray-500 dark:text-neutral-400'} ${isToday ? 'ring-1 ring-primary-300 dark:ring-primary-500' : ''}`}>{day}</div>
           );
         })}
       </div>

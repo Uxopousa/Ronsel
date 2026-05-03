@@ -64,10 +64,10 @@ export default function Layout() {
       <aside
         className={`${
           mobileOpen ? 'block' : 'hidden'
-        } md:flex md:flex-col w-56 bg-white dark:bg-neutral-900 border-r border-gray-100 dark:border-neutral-800 fixed md:static inset-y-0 left-0 z-40 animate-fade-in`}
+        } md:flex md:flex-col w-56 bg-white dark:bg-neutral-900 border-r border-gray-100 dark:border-neutral-700 fixed md:static inset-y-0 left-0 z-40 animate-fade-in`}
       >
         {/* Brand */}
-        <div className="h-14 flex items-center gap-2.5 px-4 border-b border-gray-100 dark:border-neutral-800">
+        <div className="h-14 flex items-center gap-2.5 px-4 border-b border-gray-100 dark:border-neutral-700">
           <BrandLogo size={22} />
           <span className="text-sm font-semibold text-gray-900 dark:text-neutral-100 tracking-tight">Ronsel</span>
           <button
@@ -82,7 +82,7 @@ export default function Layout() {
         <div className="px-3 pt-3 pb-2">
           <button
             onClick={() => setSearchOpen(true)}
-            className="w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-xs text-gray-400 dark:text-neutral-500 bg-gray-50 dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-100 dark:border-neutral-800 transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-xs text-gray-400 dark:text-neutral-500 bg-gray-50 dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-100 dark:border-neutral-700 transition-colors"
           >
             <Search size={13} />
             <span className="flex-1 text-left">Buscar...</span>
@@ -109,7 +109,7 @@ export default function Layout() {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all duration-150 ${
                   isActive
-                    ? 'bg-primary-50 text-primary-700 font-medium dark:bg-primary-950 dark:text-primary-300'
+                    ? 'bg-primary-50 text-primary-700 font-medium dark:bg-primary-500/10 dark:text-primary-300'
                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800'
                 }`
               }
@@ -129,9 +129,9 @@ export default function Layout() {
         </nav>
 
         {/* User + Theme + Logout */}
-        <div className="px-3 py-3 border-t border-gray-100 dark:border-neutral-800 space-y-2">
+        <div className="px-3 py-3 border-t border-gray-100 dark:border-neutral-700 space-y-2">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full bg-primary-100 text-primary-700 dark:bg-primary-950 dark:text-primary-300 flex items-center justify-center text-xs font-semibold flex-shrink-0">
+            <div className="w-7 h-7 rounded-full bg-primary-100 text-primary-700 dark:bg-primary-500/15 dark:text-primary-300 flex items-center justify-center text-xs font-semibold flex-shrink-0">
               {user?.name?.charAt(0)?.toUpperCase() || 'U'}
             </div>
             <div className="flex-1 min-w-0">
@@ -162,7 +162,7 @@ export default function Layout() {
 
       {/* Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="md:hidden h-14 bg-white dark:bg-neutral-900 border-b border-gray-100 dark:border-neutral-800 px-4 flex items-center gap-3">
+        <header className="md:hidden h-14 bg-white dark:bg-neutral-900 border-b border-gray-100 dark:border-neutral-700 px-4 flex items-center gap-3">
           <button
             onClick={() => setMobileOpen(true)}
             className="text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-200 transition-colors"

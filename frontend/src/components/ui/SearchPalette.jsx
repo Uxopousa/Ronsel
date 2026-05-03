@@ -81,7 +81,7 @@ export default function SearchPalette({ open, onClose }) {
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] animate-fade-in" onClick={onClose}>
       <div className="fixed inset-0 bg-black/15 dark:bg-black/60" />
       <div className="relative w-full max-w-lg mx-4 bg-white dark:bg-neutral-900 rounded-lg shadow-modal animate-scale-in overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center gap-3 px-4 h-12 border-b border-gray-100 dark:border-neutral-800">
+        <div className="flex items-center gap-3 px-4 h-12 border-b border-gray-100 dark:border-neutral-700">
           <Search size={16} className="text-gray-400 dark:text-neutral-500 flex-shrink-0" />
           <input
             ref={inputRef}

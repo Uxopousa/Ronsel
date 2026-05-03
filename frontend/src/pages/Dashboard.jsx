@@ -93,7 +93,7 @@ export default function Dashboard() {
       {todayTasks.length > 0 && (
         <section className="mb-6">
           <h2 className="section-title mb-3">Tareas de hoy ({todayTasks.length})</h2>
-          <div className="card divide-y divide-gray-50 dark:divide-neutral-800">
+          <div className="card divide-y divide-gray-50 dark:divide-neutral-700">
             {todayTasks.map(t => (
               <div key={t.id} className="flex items-center gap-3 px-4 py-2.5">
                 <div className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 ${t.status === 'COMPLETED' ? 'bg-green-500 border-green-500' : 'border-gray-300 dark:border-neutral-600'}`} />
@@ -149,7 +149,7 @@ export default function Dashboard() {
                   {goalExpanded[goal.id] ? <ChevronUp size={14} className="text-gray-400 dark:text-neutral-500" /> : <ChevronDown size={14} className="text-gray-400 dark:text-neutral-500" />}
                 </button>
                 {goalExpanded[goal.id] && (
-                  <div className="px-4 pb-3 pt-1 border-t border-gray-50 dark:border-neutral-800">
+                  <div className="px-4 pb-3 pt-1 border-t border-gray-50 dark:border-neutral-700">
                     <p className="text-xs text-gray-400 dark:text-neutral-500 mb-2">
                       {goal.totalTasks || 0} tareas · {goal.completedTasks || 0} completadas
                       {goal.targetDate && ` · Hasta ${new Date(goal.targetDate).toLocaleDateString('es-ES')}`}
@@ -187,8 +187,8 @@ export default function Dashboard() {
 
 function SummaryCard({ title, count, detail, link, icon: Icon, color }) {
   const colors = {
-    primary: 'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400',
-    amber: 'bg-orange-50 text-orange-600 dark:bg-orange-950 dark:text-orange-400',
+    primary: 'bg-primary-50 text-primary-600 dark:bg-primary-500/15 dark:text-primary-300',
+    amber: 'bg-orange-50 text-orange-600 dark:bg-orange-500/15 dark:text-orange-300',
   };
   return (
     <Link to={link} className="card p-4 flex items-center gap-3 hover:border-gray-200 dark:hover:border-neutral-700 transition-colors">
@@ -214,14 +214,14 @@ function WeekView({ data, todayStr, onDayClick }) {
         const isToday = day.date === todayStr;
         return (
           <button key={day.date} onClick={() => onDayClick(day.date, day.tasks)}
-            className={`rounded-md p-2 min-h-[80px] text-left transition-all ${isToday ? 'ring-1 ring-primary-300 dark:ring-primary-600 bg-white dark:bg-neutral-900' : 'bg-white dark:bg-neutral-900 card'}`}>
+            className={`rounded-md p-2 min-h-[80px] text-left transition-all ${isToday ? 'ring-1 ring-primary-300 dark:ring-primary-500 bg-white dark:bg-neutral-900' : 'bg-white dark:bg-neutral-900 card'}`}>
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[0.625rem] text-gray-400 dark:text-neutral-500 font-medium">{weekDays[date.getDay() === 0 ? 6 : date.getDay() - 1]}</span>
               <span className={`text-xs font-medium ${isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-neutral-400'}`}>{date.getDate()}</span>
             </div>
             <div className="space-y-0.5">
               {day.tasks.slice(0, 3).map(t => (
-                <div key={t.id} className={`text-[0.625rem] px-1 py-0.5 rounded truncate leading-tight ${t.status === 'COMPLETED' ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 line-through' : 'bg-primary-50 dark:bg-primary-950 text-primary-700 dark:text-primary-300'}`}>{t.title}</div>
+                <div key={t.id} className={`text-[0.625rem] px-1 py-0.5 rounded truncate leading-tight ${t.status === 'COMPLETED' ? 'bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-300 line-through' : 'bg-primary-50 dark:bg-primary-500/15 text-primary-700 dark:text-primary-300'}`}>{t.title}</div>
               ))}
               {day.tasks.length > 3 && <p className="text-[0.625rem] text-gray-400 dark:text-neutral-500">+{day.tasks.length - 3} más</p>}
             </div>
@@ -255,12 +255,12 @@ function MonthView({ date, monthTasks, todayStr, onPrev, onNext, onDayClick }) {
           const dayTasks = monthTasks[dateStr] || [];
           return (
             <button key={day} onClick={() => onDayClick(dateStr, dayTasks)}
-              className={`p-1.5 rounded-md text-left min-h-[56px] transition-all hover:bg-gray-50 dark:hover:bg-neutral-800 ${isToday ? 'ring-1 ring-primary-300 dark:ring-primary-600 bg-primary-50/30 dark:bg-primary-950/30' : ''}`}>
+              className={`p-1.5 rounded-md text-left min-h-[56px] transition-all hover:bg-gray-50 dark:hover:bg-neutral-800 ${isToday ? 'ring-1 ring-primary-300 dark:ring-primary-500 bg-primary-50/30 dark:bg-primary-500/10' : ''}`}>
               <span className={`text-xs font-medium ${isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-600 dark:text-neutral-400'}`}>{day}</span>
               {dayTasks.length > 0 && (
                 <div className="mt-0.5 space-y-0.5">
                   {dayTasks.slice(0, 2).map(t => (
-                    <div key={t.id} className={`text-[0.5rem] px-0.5 py-0.5 rounded truncate leading-tight ${t.status === 'COMPLETED' ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300' : 'bg-primary-50 dark:bg-primary-950 text-primary-700 dark:text-primary-300'}`}>{t.title}</div>
+                    <div key={t.id} className={`text-[0.5rem] px-0.5 py-0.5 rounded truncate leading-tight ${t.status === 'COMPLETED' ? 'bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-300' : 'bg-primary-50 dark:bg-primary-500/15 text-primary-700 dark:text-primary-300'}`}>{t.title}</div>
                   ))}
                   {dayTasks.length > 2 && <p className="text-[0.5rem] text-gray-400 dark:text-neutral-500">+{dayTasks.length - 2}</p>}
                 </div>
@@ -289,7 +289,7 @@ function DayPanel({ date, tasks, onClose, onQuickTask }) {
       {tasks.length === 0 ? (
         <p className="text-xs text-gray-400 dark:text-neutral-500 py-4 text-center card">Sin tareas para este día</p>
       ) : (
-        <div className="card divide-y divide-gray-50 dark:divide-neutral-800">
+        <div className="card divide-y divide-gray-50 dark:divide-neutral-700">
           {tasks.map(t => (
             <div key={t.id} className="flex items-center gap-3 px-4 py-2.5">
               <div className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 ${t.status === 'COMPLETED' ? 'bg-green-500 border-green-500' : 'border-gray-300 dark:border-neutral-600'}`} />
