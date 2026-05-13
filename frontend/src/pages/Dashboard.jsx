@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ListTodo, Flame, Target, ChevronRight, ChevronLeft, CalendarDays,
-  AlertCircle, Plus, ChevronDown, ChevronUp, X,
+  AlertCircle, Plus, X,
 } from 'lucide-react';
 import api from '../services/api';
 import * as taskService from '../services/tasks';
@@ -20,7 +20,6 @@ export default function Dashboard() {
   const [calDate, setCalDate] = useState(new Date());
   const [monthTasks, setMonthTasks] = useState({});
   const [dayPanel, setDayPanel] = useState(null);
-  const [goalExpanded, setGoalExpanded] = useState({});
   const [quickTask, setQuickTask] = useState(null);
   const addToast = useToast();
 
@@ -62,7 +61,6 @@ export default function Dashboard() {
   const todayTasks = (data.tasksToday || []).filter(t => !t.dueDate || t.dueDate.slice(0, 10) === todayStr);
   const pendingHabits = data.pendingHabits || [];
 
-  function toggleGoal(id) { setGoalExpanded(prev => ({ ...prev, [id]: !prev[id] })); }
   function navMonth(dir) { const d = new Date(calDate); d.setMonth(d.getMonth() + dir); setCalDate(d); }
   function handleDayClick(dateStr, tasks) { setDayPanel({ date: dateStr, tasks: tasks || [] }); }
 
@@ -136,28 +134,32 @@ export default function Dashboard() {
       {data.activeGoals?.length > 0 && (
         <section className="mb-6">
           <h2 className="section-title mb-3">Objetivos activos</h2>
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             {data.activeGoals.map(goal => (
-              <div key={goal.id} className="card overflow-hidden">
-                <button onClick={() => toggleGoal(goal.id)} className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors">
-                  <Target size={16} className="text-primary-600 dark:text-primary-400 flex-shrink-0" />
-                  <span className="text-sm font-medium text-gray-900 dark:text-neutral-100 flex-1 truncate">{goal.title}</span>
-                  <span className="text-xs text-gray-400 dark:text-neutral-500 tabular-nums">{goal.progress}%</span>
-                  <div className="w-20 bg-gray-100 dark:bg-neutral-800 rounded-full h-1.5">
+              <Link
+                key={goal.id}
+                to="/goals"
+                className="card card-hover flex items-center gap-3 px-4 py-3 transition-colors"
+              >
+                <Target size={16} className="text-primary-600 dark:text-primary-400 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-gray-900 dark:text-neutral-100 truncate">{goal.title}</span>
+                  </div>
+                  {goal.description && (
+                    <p className="text-xs text-gray-400 dark:text-neutral-500 truncate mt-0.5">{goal.description}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <span className="text-xs text-gray-400 dark:text-neutral-500 tabular-nums whitespace-nowrap">
+                    {goal.completedTasks || 0}/{goal.totalTasks || 0}
+                  </span>
+                  <div className="w-16 bg-gray-100 dark:bg-neutral-800 rounded-full h-1.5">
                     <div className="bg-primary-500 dark:bg-primary-400 h-1.5 rounded-full transition-all" style={{ width: `${goal.progress}%` }} />
                   </div>
-                  {goalExpanded[goal.id] ? <ChevronUp size={14} className="text-gray-400 dark:text-neutral-500" /> : <ChevronDown size={14} className="text-gray-400 dark:text-neutral-500" />}
-                </button>
-                {goalExpanded[goal.id] && (
-                  <div className="px-4 pb-3 pt-1 border-t border-gray-50 dark:border-neutral-700">
-                    <p className="text-xs text-gray-400 dark:text-neutral-500 mb-2">
-                      {goal.totalTasks || 0} tareas · {goal.completedTasks || 0} completadas
-                      {goal.targetDate && ` · Hasta ${new Date(goal.targetDate).toLocaleDateString('es-ES')}`}
-                    </p>
-                    <Link to="/goals" className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium">Ver detalle</Link>
-                  </div>
-                )}
-              </div>
+                  <span className="text-xs text-gray-400 dark:text-neutral-500 tabular-nums w-8 text-right">{goal.progress}%</span>
+                </div>
+              </Link>
             ))}
           </div>
         </section>

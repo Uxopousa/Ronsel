@@ -60,7 +60,11 @@ export async function getDashboard(userId) {
     return {
       id: goal.id,
       title: goal.title,
+      description: goal.description,
+      targetDate: goal.targetDate,
       progress: total > 0 ? Math.round((completed / total) * 100) : 0,
+      totalTasks: total,
+      completedTasks: completed,
     };
   });
 
