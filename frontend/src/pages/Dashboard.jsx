@@ -1,11 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ListTodo, Flame, Target, ChevronRight, ChevronLeft, CalendarDays,
-  AlertCircle, Plus, X,
+  AlertCircle, Plus, X, CheckCircle, Check, Eye, EyeOff, Palette, Edit3,
 } from 'lucide-react';
 import api from '../services/api';
 import * as taskService from '../services/tasks';
+import * as habitService from '../services/habits';
 import TaskModal from '../components/shared/TaskModal';
 import { useToast } from '../components/ui/Toast';
 
@@ -13,22 +14,32 @@ const weekDays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
+const LS_SHOW_HABITS = 'dash_showHabits';
+const LS_COLOR_PRIORITY = 'dash_colorPriority';
+
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('week');
   const [calDate, setCalDate] = useState(new Date());
   const [monthTasks, setMonthTasks] = useState({});
-  const [dayPanel, setDayPanel] = useState(null);
+  const [dayModal, setDayModal] = useState(null);
   const [quickTask, setQuickTask] = useState(null);
+  const [showHabits, setShowHabits] = useState(() => localStorage.getItem(LS_SHOW_HABITS) === 'true');
+  const [colorPriority, setColorPriority] = useState(() => localStorage.getItem(LS_COLOR_PRIORITY) === 'true');
+  const [pendingHabits, setPendingHabits] = useState([]);
   const addToast = useToast();
 
   const today = new Date();
   const todayStr = today.toISOString().slice(0, 10);
 
+  function reloadDashboard() {
+    api.get('/dashboard').then(res => { setData(res.data); setPendingHabits(res.data.pendingHabits || []); }).catch(() => {});
+  }
+
   useEffect(() => {
-    api.get('/dashboard').then(res => setData(res.data)).catch(() => {})
-      .finally(() => setLoading(false));
+    reloadDashboard();
+    setLoading(false);
   }, []);
 
   const loadMonthTasks = useCallback(async (year, month) => {
@@ -54,15 +65,37 @@ export default function Dashboard() {
     if (view === 'month') loadMonthTasks(calDate.getFullYear(), calDate.getMonth() + 1);
   }, [view, calDate, loadMonthTasks]);
 
+  function toggleShowHabits(v) { setShowHabits(v); localStorage.setItem(LS_SHOW_HABITS, v); }
+  function toggleColorPriority(v) { setColorPriority(v); localStorage.setItem(LS_COLOR_PRIORITY, v); }
+
   if (loading) return <p className="text-gray-400 dark:text-neutral-500 text-sm py-8 text-center">Cargando...</p>;
   if (!data) return <p className="text-gray-400 dark:text-neutral-500 text-sm py-8 text-center">Error al cargar el dashboard.</p>;
 
   const overdue = (data.tasksToday || []).filter(t => t.dueDate && t.dueDate.slice(0, 10) < todayStr);
   const todayTasks = (data.tasksToday || []).filter(t => !t.dueDate || t.dueDate.slice(0, 10) === todayStr);
-  const pendingHabits = data.pendingHabits || [];
+
+  async function handleToggleTask(task) {
+    try {
+      const ns = task.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
+      await taskService.updateTask(task.id, { status: ns });
+      reloadDashboard();
+    } catch {
+      addToast('Error al actualizar la tarea', 'error');
+    }
+  }
+
+  async function handleToggleHabit(habit) {
+    try {
+      await habitService.toggleHabit(habit.id);
+      setPendingHabits(prev => prev.filter(h => h.id !== habit.id));
+      reloadDashboard();
+    } catch {
+      addToast('Error al completar el hábito', 'error');
+    }
+  }
 
   function navMonth(dir) { const d = new Date(calDate); d.setMonth(d.getMonth() + dir); setCalDate(d); }
-  function handleDayClick(dateStr, tasks) { setDayPanel({ date: dateStr, tasks: tasks || [] }); }
+  function handleDayClick(dateStr, tasks) { setDayModal({ date: dateStr, tasks: tasks || [] }); }
 
   const hasContent = data.tasksToday?.length || pendingHabits.length || data.activeGoals?.length;
 
@@ -75,9 +108,9 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-        <SummaryCard title="Pendientes" count={todayTasks.length} detail={overdue.length > 0 ? `${overdue.length} vencidas` : null} link="/tasks" icon={ListTodo} color="primary" />
-        <SummaryCard title="Hábitos" count={pendingHabits.length} link="/habits" icon={Flame} color="amber" />
-        <SummaryCard title="Objetivos activos" count={data.activeGoals?.length || 0} link="/goals" icon={Target} color="primary" />
+        <SummaryCard title="Pendientes" count={todayTasks.length} doneLabel="Completadas" link="/tasks" icon={ListTodo} color="primary" />
+        <SummaryCard title="Hábitos" count={pendingHabits.length} doneLabel="Completados" link="/habits" icon={Flame} color="amber" />
+        <SummaryCard title="Objetivos activos" count={data.activeGoals?.length || 0} doneLabel="Al día" link="/goals" icon={Target} color="primary" />
       </div>
 
       {overdue.length > 0 && (
@@ -93,12 +126,18 @@ export default function Dashboard() {
           <h2 className="section-title mb-3">Tareas de hoy ({todayTasks.length})</h2>
           <div className="card divide-y divide-gray-50 dark:divide-neutral-700">
             {todayTasks.map(t => (
-              <div key={t.id} className="flex items-center gap-3 px-4 py-2.5">
-                <div className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 ${t.status === 'COMPLETED' ? 'bg-green-500 border-green-500' : 'border-gray-300 dark:border-neutral-600'}`} />
-                <span className={`text-sm flex-1 truncate ${t.status === 'COMPLETED' ? 'line-through text-gray-400 dark:text-neutral-600' : 'text-gray-900 dark:text-neutral-100'}`}>{t.title}</span>
+              <button
+                key={t.id}
+                onClick={() => handleToggleTask(t)}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors group"
+              >
+                <div className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 transition-all duration-200 ${t.status === 'COMPLETED' ? 'bg-green-500 border-green-500' : 'border-gray-300 dark:border-neutral-600 group-hover:border-primary-400'}`}>
+                  {t.status === 'COMPLETED' && <Check size={10} className="text-white m-auto" strokeWidth={3} />}
+                </div>
+                <span className={`text-sm flex-1 truncate transition-colors ${t.status === 'COMPLETED' ? 'line-through text-gray-400 dark:text-neutral-600' : 'text-gray-900 dark:text-neutral-100'}`}>{t.title}</span>
                 {t.category && <span className="text-[0.625rem] px-1.5 py-0.5 rounded-sm font-medium" style={{ backgroundColor: t.category.color + '18', color: t.category.color }}>{t.category.name}</span>}
                 {t.dueDate && t.dueDate.slice(0, 10) < todayStr && <span className="text-[0.625rem] text-red-500 dark:text-red-400 font-medium">Vencida</span>}
-              </div>
+              </button>
             ))}
           </div>
         </section>
@@ -109,10 +148,15 @@ export default function Dashboard() {
           <h2 className="section-title mb-3">Hábitos pendientes ({pendingHabits.length})</h2>
           <div className="flex flex-wrap gap-2">
             {pendingHabits.map(h => (
-              <div key={h.id} className="card px-3 py-2 flex items-center gap-2 text-sm">
+              <button
+                key={h.id}
+                onClick={() => handleToggleHabit(h)}
+                className="card px-3 py-2 flex items-center gap-2 text-sm hover:border-primary-300 dark:hover:border-primary-600 hover:bg-primary-50/30 dark:hover:bg-primary-500/5 transition-all group"
+              >
+                <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-neutral-600 group-hover:border-primary-400 flex-shrink-0 transition-colors" />
                 <Flame size={14} className="text-orange-400 dark:text-orange-500" />
                 <span className="text-gray-700 dark:text-neutral-200">{h.name}</span>
-              </div>
+              </button>
             ))}
           </div>
         </section>
@@ -121,42 +165,53 @@ export default function Dashboard() {
       <section className="mb-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="section-title">Calendario</h2>
-          <div className="flex bg-gray-100 dark:bg-neutral-800 rounded-md p-0.5 gap-0.5">
-            <button onClick={() => setView('week')} className={`px-2.5 py-1 text-xs rounded font-medium transition-colors ${view === 'week' ? 'bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100 shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-200'}`}>Semana</button>
-            <button onClick={() => setView('month')} className={`px-2.5 py-1 text-xs rounded font-medium transition-colors ${view === 'month' ? 'bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100 shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-200'}`}>Mes</button>
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-neutral-400 cursor-pointer select-none">
+              <input type="checkbox" checked={showHabits} onChange={e => toggleShowHabits(e.target.checked)} className="w-3 h-3 rounded accent-primary-600" />
+              <Eye size={12} className={showHabits ? 'text-primary-600 dark:text-primary-400' : ''} />
+              Hábitos
+            </label>
+            <label className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-neutral-400 cursor-pointer select-none">
+              <input type="checkbox" checked={colorPriority} onChange={e => toggleColorPriority(e.target.checked)} className="w-3 h-3 rounded accent-primary-600" />
+              <Palette size={12} className={colorPriority ? 'text-primary-600 dark:text-primary-400' : ''} />
+              Prioridad
+            </label>
+            <div className="flex bg-gray-100 dark:bg-neutral-800 rounded-md p-0.5 gap-0.5">
+              <button onClick={() => setView('week')} className={`px-2.5 py-1 text-xs rounded font-medium transition-colors ${view === 'week' ? 'bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100 shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-200'}`}>Semana</button>
+              <button onClick={() => setView('month')} className={`px-2.5 py-1 text-xs rounded font-medium transition-colors ${view === 'month' ? 'bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100 shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-200'}`}>Mes</button>
+            </div>
           </div>
         </div>
-        {view === 'week' ? <WeekView data={data} todayStr={todayStr} onDayClick={handleDayClick} /> : <MonthView date={calDate} monthTasks={monthTasks} todayStr={todayStr} onPrev={() => navMonth(-1)} onNext={() => navMonth(1)} onDayClick={handleDayClick} />}
+        {view === 'week' ? <WeekView data={data} todayStr={todayStr} onDayClick={handleDayClick} colorPriority={colorPriority} /> : <MonthView date={calDate} monthTasks={monthTasks} todayStr={todayStr} onPrev={() => navMonth(-1)} onNext={() => navMonth(1)} onDayClick={handleDayClick} colorPriority={colorPriority} />}
       </section>
 
-      {dayPanel && <DayPanel date={dayPanel.date} tasks={dayPanel.tasks} onClose={() => setDayPanel(null)} onQuickTask={() => setQuickTask({ dueDate: dayPanel.date })} />}
+      {dayModal && (
+        <DayModal
+          date={dayModal.date}
+          tasks={dayModal.tasks}
+          onClose={() => setDayModal(null)}
+          onToggleTask={handleToggleTask}
+          onQuickTask={() => setQuickTask({ dueDate: dayModal.date })}
+          pendingHabits={pendingHabits}
+          onToggleHabit={handleToggleHabit}
+          showHabits={showHabits}
+        />
+      )}
 
       {data.activeGoals?.length > 0 && (
         <section className="mb-6">
           <h2 className="section-title mb-3">Objetivos activos</h2>
           <div className="space-y-1">
             {data.activeGoals.map(goal => (
-              <Link
-                key={goal.id}
-                to="/goals"
-                className="card card-hover flex items-center gap-3 px-4 py-3 transition-colors"
-              >
+              <Link key={goal.id} to="/goals" className="card card-hover flex items-center gap-3 px-4 py-3 transition-colors">
                 <Target size={16} className="text-primary-600 dark:text-primary-400 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-900 dark:text-neutral-100 truncate">{goal.title}</span>
-                  </div>
-                  {goal.description && (
-                    <p className="text-xs text-gray-400 dark:text-neutral-500 truncate mt-0.5">{goal.description}</p>
-                  )}
+                  <span className="text-sm font-medium text-gray-900 dark:text-neutral-100 truncate">{goal.title}</span>
+                  {goal.description && <p className="text-xs text-gray-400 dark:text-neutral-500 truncate mt-0.5">{goal.description}</p>}
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  <span className="text-xs text-gray-400 dark:text-neutral-500 tabular-nums whitespace-nowrap">
-                    {goal.completedTasks || 0}/{goal.totalTasks || 0}
-                  </span>
-                  <div className="w-16 bg-gray-100 dark:bg-neutral-800 rounded-full h-1.5">
-                    <div className="bg-primary-500 dark:bg-primary-400 h-1.5 rounded-full transition-all" style={{ width: `${goal.progress}%` }} />
-                  </div>
+                  <span className="text-xs text-gray-400 dark:text-neutral-500 tabular-nums whitespace-nowrap">{goal.completedTasks || 0}/{goal.totalTasks || 0}</span>
+                  <div className="w-16 bg-gray-100 dark:bg-neutral-800 rounded-full h-1.5"><div className="bg-primary-500 dark:bg-primary-400 h-1.5 rounded-full transition-all" style={{ width: `${goal.progress}%` }} /></div>
                   <span className="text-xs text-gray-400 dark:text-neutral-500 tabular-nums w-8 text-right">{goal.progress}%</span>
                 </div>
               </Link>
@@ -167,18 +222,19 @@ export default function Dashboard() {
 
       {!hasContent && (
         <div className="text-center py-16">
-          <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3">
-            <ListTodo size={20} className="text-gray-400 dark:text-neutral-500" />
+          <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-500/15 flex items-center justify-center mx-auto mb-3">
+            <CheckCircle size={20} className="text-green-600 dark:text-green-400" />
           </div>
-          <p className="text-sm text-gray-400 dark:text-neutral-500 mb-4">Bienvenido a Ronsel. No tienes nada pendiente hoy.</p>
-          <Link to="/tasks" className="btn-primary btn-md">Crear tu primera tarea</Link>
+          <p className="text-sm text-gray-500 dark:text-neutral-400 mb-1">¡Todo al día!</p>
+          <p className="text-xs text-gray-400 dark:text-neutral-500 mb-4">No tienes tareas ni hábitos pendientes.</p>
+          <Link to="/tasks" className="btn-primary btn-md">Crear una tarea</Link>
         </div>
       )}
 
       {quickTask !== null && (
         <TaskModal task={quickTask} categories={[]} goals={[]}
           onSave={async (t) => {
-            try { await taskService.createTask(t); addToast('Tarea creada', 'success'); setQuickTask(null); api.get('/dashboard').then(res => setData(res.data)).catch(() => {}); }
+            try { await taskService.createTask(t); addToast('Tarea creada', 'success'); setQuickTask(null); reloadDashboard(); }
             catch (err) { addToast(err.response?.data?.error || 'Error al crear la tarea', 'error'); }
           }}
           onClose={() => setQuickTask(null)} />
@@ -187,27 +243,43 @@ export default function Dashboard() {
   );
 }
 
-function SummaryCard({ title, count, detail, link, icon: Icon, color }) {
+function SummaryCard({ title, count, doneLabel, link, icon: Icon, color }) {
   const colors = {
     primary: 'bg-primary-50 text-primary-600 dark:bg-primary-500/15 dark:text-primary-300',
     amber: 'bg-orange-50 text-orange-600 dark:bg-orange-500/15 dark:text-orange-300',
   };
+  const isDone = count === 0;
   return (
     <Link to={link} className="card p-4 flex items-center gap-3 hover:border-gray-200 dark:hover:border-neutral-700 transition-colors">
-      <div className={`w-9 h-9 rounded-md ${colors[color]} flex items-center justify-center flex-shrink-0`}>
-        <Icon size={16} strokeWidth={2} />
+      <div className={`w-9 h-9 rounded-md flex items-center justify-center flex-shrink-0 ${isDone ? 'bg-green-100 text-green-600 dark:bg-green-500/15 dark:text-green-400' : colors[color]}`}>
+        {isDone ? <CheckCircle size={16} strokeWidth={2.5} /> : <Icon size={16} strokeWidth={2} />}
       </div>
       <div>
-        <p className="text-xl font-semibold text-gray-900 dark:text-neutral-100 leading-none">{count}</p>
+        {isDone ? (
+          <p className="text-xs font-medium text-green-700 dark:text-green-400">{doneLabel}</p>
+        ) : (
+          <p className="text-xl font-semibold text-gray-900 dark:text-neutral-100 leading-none">{count}</p>
+        )}
         <p className="text-xs text-gray-400 dark:text-neutral-500 mt-0.5">{title}</p>
-        {detail && <p className="text-[0.625rem] text-gray-400 dark:text-neutral-500 mt-0.5">{detail}</p>}
       </div>
       <ChevronRight size={14} className="text-gray-300 dark:text-neutral-600 ml-auto flex-shrink-0" />
     </Link>
   );
 }
 
-function WeekView({ data, todayStr, onDayClick }) {
+function priorityColor(p) {
+  if (p === 'HIGH') return 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300';
+  if (p === 'MEDIUM') return 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300';
+  return 'bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400';
+}
+
+function taskChipColor(t, colorPriority) {
+  if (t.status === 'COMPLETED') return 'bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-300 line-through';
+  if (colorPriority) return priorityColor(t.priority);
+  return 'bg-primary-50 dark:bg-primary-500/15 text-primary-700 dark:text-primary-300';
+}
+
+function WeekView({ data, todayStr, onDayClick, colorPriority }) {
   if (!data.week) return null;
   return (
     <div className="grid grid-cols-7 gap-1.5">
@@ -223,7 +295,7 @@ function WeekView({ data, todayStr, onDayClick }) {
             </div>
             <div className="space-y-0.5">
               {day.tasks.slice(0, 3).map(t => (
-                <div key={t.id} className={`text-[0.625rem] px-1 py-0.5 rounded truncate leading-tight ${t.status === 'COMPLETED' ? 'bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-300 line-through' : 'bg-primary-50 dark:bg-primary-500/15 text-primary-700 dark:text-primary-300'}`}>{t.title}</div>
+                <div key={t.id} className={`text-[0.625rem] px-1 py-0.5 rounded truncate leading-tight ${taskChipColor(t, colorPriority)}`}>{t.title}</div>
               ))}
               {day.tasks.length > 3 && <p className="text-[0.625rem] text-gray-400 dark:text-neutral-500">+{day.tasks.length - 3} más</p>}
             </div>
@@ -234,7 +306,7 @@ function WeekView({ data, todayStr, onDayClick }) {
   );
 }
 
-function MonthView({ date, monthTasks, todayStr, onPrev, onNext, onDayClick }) {
+function MonthView({ date, monthTasks, todayStr, onPrev, onNext, onDayClick, colorPriority }) {
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const daysInMonth = new Date(year, month, 0).getDate();
@@ -262,7 +334,7 @@ function MonthView({ date, monthTasks, todayStr, onPrev, onNext, onDayClick }) {
               {dayTasks.length > 0 && (
                 <div className="mt-0.5 space-y-0.5">
                   {dayTasks.slice(0, 2).map(t => (
-                    <div key={t.id} className={`text-[0.5rem] px-0.5 py-0.5 rounded truncate leading-tight ${t.status === 'COMPLETED' ? 'bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-300' : 'bg-primary-50 dark:bg-primary-500/15 text-primary-700 dark:text-primary-300'}`}>{t.title}</div>
+                    <div key={t.id} className={`text-[0.5rem] px-0.5 py-0.5 rounded truncate leading-tight ${taskChipColor(t, colorPriority)}`}>{t.title}</div>
                   ))}
                   {dayTasks.length > 2 && <p className="text-[0.5rem] text-gray-400 dark:text-neutral-500">+{dayTasks.length - 2}</p>}
                 </div>
@@ -275,32 +347,84 @@ function MonthView({ date, monthTasks, todayStr, onPrev, onNext, onDayClick }) {
   );
 }
 
-function DayPanel({ date, tasks, onClose, onQuickTask }) {
+function DayModal({ date, tasks, onClose, onToggleTask, onQuickTask, pendingHabits, onToggleHabit, showHabits }) {
+  const modalRef = useRef(null);
   const d = new Date(date + 'T00:00:00');
   const dayName = dayNames[d.getDay()];
   const displayDate = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+
+  useEffect(() => {
+    function handleKeyDown(e) { if (e.key === 'Escape') onClose(); }
+    window.addEventListener('keydown', handleKeyDown);
+    if (modalRef.current) modalRef.current.focus();
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  const isToday = date === new Date().toISOString().slice(0, 10);
+
   return (
-    <section className="mb-6 animate-fade-in">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="section-title">{dayName}, {displayDate}</h2>
-        <div className="flex gap-2">
-          <button onClick={onQuickTask} className="btn-ghost btn-sm gap-1"><Plus size={12} />Tarea</button>
-          <button onClick={onClose} className="btn-ghost btn-sm p-1.5"><X size={14} /></button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in" onClick={onClose}>
+      <div className="fixed inset-0 bg-black/30 dark:bg-black/60 backdrop-blur-sm" />
+      <div
+        ref={modalRef}
+        tabIndex={-1}
+        className="relative w-full max-w-md mx-4 bg-white dark:bg-neutral-900 rounded-lg shadow-modal animate-scale-in max-h-[85vh] overflow-y-auto custom-scrollbar"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-5 h-12 border-b border-gray-100 dark:border-neutral-700">
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-neutral-100">{dayName}, {displayDate}</h2>
+          <div className="flex items-center gap-1">
+            <button onClick={onQuickTask} className="btn-ghost btn-sm gap-1"><Plus size={12} />Tarea</button>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"><X size={16} /></button>
+          </div>
+        </div>
+
+        <div className="p-5 space-y-4">
+          {tasks.length === 0 && (!isToday || pendingHabits.length === 0) && (
+            <p className="text-sm text-gray-400 dark:text-neutral-500 text-center py-4">Sin tareas para este día</p>
+          )}
+
+          {tasks.length > 0 && (
+            <div>
+              <h3 className="text-xs font-semibold text-gray-400 dark:text-neutral-500 uppercase tracking-wider mb-2">Tareas ({tasks.length})</h3>
+              <div className="space-y-1">
+                {tasks.map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => onToggleTask(t)}
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-50 dark:hover:bg-neutral-800 text-left transition-colors group"
+                  >
+                    <div className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 transition-all ${t.status === 'COMPLETED' ? 'bg-green-500 border-green-500' : 'border-gray-300 dark:border-neutral-600 group-hover:border-primary-400'}`}>
+                      {t.status === 'COMPLETED' && <Check size={10} className="text-white m-auto" strokeWidth={3} />}
+                    </div>
+                    <span className={`text-sm flex-1 truncate ${t.status === 'COMPLETED' ? 'line-through text-gray-400 dark:text-neutral-600' : 'text-gray-900 dark:text-neutral-100'}`}>{t.title}</span>
+                    {t.category && <span className="text-[0.625rem] px-1.5 py-0.5 rounded-sm font-medium" style={{ backgroundColor: t.category.color + '18', color: t.category.color }}>{t.category.name}</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {isToday && pendingHabits.length > 0 && (
+            <div>
+              <h3 className="text-xs font-semibold text-gray-400 dark:text-neutral-500 uppercase tracking-wider mb-2">Hábitos pendientes ({pendingHabits.length})</h3>
+              <div className="flex flex-wrap gap-2">
+                {pendingHabits.map(h => (
+                  <button
+                    key={h.id}
+                    onClick={() => onToggleHabit(h)}
+                    className="card px-3 py-2 flex items-center gap-2 text-sm hover:border-primary-300 dark:hover:border-primary-600 hover:bg-primary-50/30 dark:hover:bg-primary-500/5 transition-all group"
+                  >
+                    <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-neutral-600 group-hover:border-primary-400 flex-shrink-0 transition-colors" />
+                    <Flame size={14} className="text-orange-400 dark:text-orange-500" />
+                    <span className="text-gray-700 dark:text-neutral-200">{h.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
-      {tasks.length === 0 ? (
-        <p className="text-xs text-gray-400 dark:text-neutral-500 py-4 text-center card">Sin tareas para este día</p>
-      ) : (
-        <div className="card divide-y divide-gray-50 dark:divide-neutral-700">
-          {tasks.map(t => (
-            <div key={t.id} className="flex items-center gap-3 px-4 py-2.5">
-              <div className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 ${t.status === 'COMPLETED' ? 'bg-green-500 border-green-500' : 'border-gray-300 dark:border-neutral-600'}`} />
-              <span className={`text-sm flex-1 truncate ${t.status === 'COMPLETED' ? 'line-through text-gray-400 dark:text-neutral-600' : 'text-gray-900 dark:text-neutral-100'}`}>{t.title}</span>
-              {t.category && <span className="text-[0.625rem] px-1.5 py-0.5 rounded-sm font-medium" style={{ backgroundColor: t.category.color + '18', color: t.category.color }}>{t.category.name}</span>}
-            </div>
-          ))}
-        </div>
-      )}
-    </section>
+    </div>
   );
 }
