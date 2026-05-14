@@ -43,7 +43,9 @@ export default function Goals() {
     try {
       const ns = task.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
       await taskService.updateTask(task.id, { status: ns });
-      addToast(ns === 'COMPLETED' ? 'Tarea completada' : 'Tarea pendiente', 'success'); loadTasksForGoal(task.goalId);
+      addToast(ns === 'COMPLETED' ? 'Tarea completada' : 'Tarea pendiente', 'success');
+      loadTasksForGoal(task.goalId);
+      load();
     } catch (err) { addToast(err.response?.data?.error || 'Error al actualizar la tarea', 'error'); }
   }
 
@@ -51,15 +53,23 @@ export default function Goals() {
     const title = newTaskText[goalId]?.trim(); if (!title) return;
     try {
       await taskService.createTask({ title, goalId });
-      setNewTaskText(prev => ({ ...prev, [goalId]: '' })); loadTasksForGoal(goalId);
+      setNewTaskText(prev => ({ ...prev, [goalId]: '' }));
+      loadTasksForGoal(goalId);
+      load();
     } catch (err) { addToast(err.response?.data?.error || 'Error al crear la tarea', 'error'); }
   }
 
   function computeProgress(goal) {
     const tasks = goalTasks[goal.id];
-    const total = tasks?.length || 0;
-    const completed = tasks?.filter(t => t.status === 'COMPLETED').length || 0;
-    return { progress: total > 0 ? Math.round((completed / total) * 100) : 0, total, completed };
+    if (tasks) {
+      const completed = tasks.filter(t => t.status === 'COMPLETED').length;
+      return { progress: tasks.length > 0 ? Math.round((completed / tasks.length) * 100) : 0, total: tasks.length, completed };
+    }
+    return {
+      progress: goal.progress || 0,
+      total: goal.totalTasks || 0,
+      completed: goal.completedTasks || 0,
+    };
   }
 
   return (
