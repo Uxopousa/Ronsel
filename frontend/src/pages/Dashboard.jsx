@@ -34,12 +34,14 @@ export default function Dashboard() {
   const todayStr = today.toISOString().slice(0, 10);
 
   function reloadDashboard() {
-    api.get('/dashboard').then(res => { setData(res.data); setPendingHabits(res.data.pendingHabits || []); }).catch(() => {});
+    api.get('/dashboard')
+      .then(res => { setData(res.data); setPendingHabits(res.data.pendingHabits || []); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }
 
   useEffect(() => {
     reloadDashboard();
-    setLoading(false);
   }, []);
 
   const loadMonthTasks = useCallback(async (year, month) => {
