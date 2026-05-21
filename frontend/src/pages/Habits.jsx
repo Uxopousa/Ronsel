@@ -99,6 +99,15 @@ function StatCard({ icon: Icon, value, label, color }) {
 }
 
 function HabitCard({ habit, expanded, onToggle, onEdit, onDelete, onExpand }) {
+  const [weekData, setWeekData] = useState({});
+
+  useEffect(() => {
+    const now = new Date();
+    habitService.getHabitCalendar(habit.id, now.getFullYear(), now.getMonth() + 1)
+      .then(d => setWeekData(d))
+      .catch(() => {});
+  }, [habit.id]);
+
   return (
     <div className="card overflow-hidden">
       <div className="flex items-center gap-3 px-4 py-3">
@@ -129,7 +138,7 @@ function HabitCard({ habit, expanded, onToggle, onEdit, onDelete, onExpand }) {
       </div>
 
       <div className="flex items-center gap-1 px-4 pb-3">
-        {getWeekDays().map((day, i) => (
+        {getWeekDays(weekData).map((day, i) => (
           <div key={i} className={`w-3 h-3 rounded-sm ${day.completed ? 'bg-green-400 dark:bg-green-600' : day.future ? 'bg-gray-100 dark:bg-neutral-800' : 'bg-gray-200 dark:bg-neutral-700'}`} title={`${weekDays[i]}: ${day.completed ? '✓' : day.future ? '—' : '✗'}`} />
         ))}
         <span className="text-[0.625rem] text-gray-400 dark:text-neutral-500 ml-1.5">Esta semana</span>
@@ -183,13 +192,14 @@ function HabitCalendarInline({ habitId }) {
   );
 }
 
-function getWeekDays() {
+function getWeekDays(calendarData) {
   const today = new Date();
   const dayOfWeek = today.getDay();
   const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
   const monday = new Date(today); monday.setDate(today.getDate() + mondayOffset); monday.setHours(0, 0, 0, 0);
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(monday); d.setDate(monday.getDate() + i);
-    return { date: d, completed: false, future: d > today };
+    const completed = calendarData?.days?.[d.getDate()] ?? false;
+    return { date: d, completed, future: d > today };
   });
 }
