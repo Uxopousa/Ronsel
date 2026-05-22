@@ -29,7 +29,7 @@ export default function CategoryModal({ categories, onChange, onClose }) {
 
   function handleEdit(cat) { setEditing(cat); setForm({ name: cat.name, color: cat.color }); }
   function handleCancelEdit() { setEditing(null); setForm({ name: '', color: '#6366f1' }); setError(''); }
-  async function handleDelete(id) { try { await categoryService.deleteCategory(id); onChange(); } catch { setError('Error al eliminar la categoría'); } }
+  async function handleDelete(id) { if (!window.confirm('¿Eliminar esta categoría?')) return; try { await categoryService.deleteCategory(id); onChange(); } catch { setError('Error al eliminar la categoría'); } }
 
   return (
     <div className="fixed inset-0 bg-black/20 dark:bg-black/60 flex items-center justify-center z-50 animate-fade-in" onClick={onClose}>

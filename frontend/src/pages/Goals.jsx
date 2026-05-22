@@ -35,6 +35,7 @@ export default function Goals() {
   }
 
   async function handleDelete(id) {
+    if (!window.confirm('¿Eliminar este objetivo y sus tareas asociadas?')) return;
     try { await goalService.deleteGoal(id); addToast('Objetivo eliminado', 'success'); load(); }
     catch (err) { addToast(err.response?.data?.error || 'Error al eliminar el objetivo', 'error'); }
   }

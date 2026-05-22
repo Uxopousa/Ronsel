@@ -69,6 +69,7 @@ export default function Tasks() {
   }
 
   async function handleDelete(id) {
+    if (!window.confirm('¿Eliminar esta tarea?')) return;
     try { await taskService.deleteTask(id); addToast('Tarea eliminada', 'success'); loadTasks(); }
     catch (err) { addToast(err.response?.data?.error || 'Error al eliminar la tarea', 'error'); }
   }

@@ -33,6 +33,7 @@ export default function Habits() {
   }
 
   async function handleDelete(id) {
+    if (!window.confirm('¿Eliminar este hábito?')) return;
     try { await habitService.deleteHabit(id); addToast('Hábito eliminado', 'success'); load(); }
     catch (err) { addToast(err.response?.data?.error || 'Error al eliminar el hábito', 'error'); }
   }
