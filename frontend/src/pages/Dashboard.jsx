@@ -36,7 +36,7 @@ export default function Dashboard() {
   function reloadDashboard() {
     api.get('/dashboard')
       .then(res => { setData(res.data); setPendingHabits(res.data.pendingHabits || []); })
-      .catch(() => {})
+      .catch(() => addToast('Error al cargar el dashboard', 'error'))
       .finally(() => setLoading(false));
   }
 

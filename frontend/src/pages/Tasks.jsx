@@ -173,8 +173,17 @@ export default function Tasks() {
 }
 
 function FilterPanel({ filters, categories, goals, onChange, onClose }) {
+  useEffect(() => {
+    function handleClick(e) {
+      const panel = e.target.closest('[data-filter-panel]');
+      if (!panel) onClose();
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [onClose]);
+
   return (
-    <div className="absolute top-full right-0 mt-1 w-56 bg-white dark:bg-neutral-900 rounded-lg shadow-dropdown border border-gray-100 dark:border-neutral-700 p-3 z-10 animate-fade-in" onClick={e => e.stopPropagation()}>
+    <div data-filter-panel className="absolute top-full right-0 mt-1 w-56 bg-white dark:bg-neutral-900 rounded-lg shadow-dropdown border border-gray-100 dark:border-neutral-700 p-3 z-10 animate-fade-in" onClick={e => e.stopPropagation()}>
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Filtros</span>
         <button onClick={onClose} className="text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300"><X size={12} /></button>
