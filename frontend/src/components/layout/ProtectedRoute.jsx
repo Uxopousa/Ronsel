@@ -7,8 +7,8 @@ export default function ProtectedRoute({ children }) {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
-        <div className="flex items-center gap-2 text-gray-400 text-sm">
+      <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-neutral-950">
+        <div className="flex items-center gap-2 text-gray-400 dark:text-neutral-500 text-sm">
           <Loader2 size={16} className="animate-spin" />
           Cargando...
         </div>

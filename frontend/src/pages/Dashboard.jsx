@@ -112,7 +112,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
         <SummaryCard title="Pendientes" count={todayTasks.length} doneLabel="Completadas" link="/tasks" icon={ListTodo} color="primary" />
         <SummaryCard title="Hábitos" count={pendingHabits.length} doneLabel="Completados" link="/habits" icon={Flame} color="amber" />
-        <SummaryCard title="Objetivos activos" count={data.activeGoals?.length || 0} doneLabel="Al día" link="/goals" icon={Target} color="primary" />
+        <SummaryCard title="Objetivos activos" count={data.activeGoals?.length || 0} doneLabel="Sin objetivos" link="/goals" icon={Target} color="primary" />
       </div>
 
       {overdue.length > 0 && (
