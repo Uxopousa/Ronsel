@@ -11,12 +11,16 @@ export default function Goals() {
   const [modal, setModal] = useState(null);
   const [expanded, setExpanded] = useState({});
   const [newTaskText, setNewTaskText] = useState({});
+  const [loadingTasks, setLoadingTasks] = useState({});
+  const [submittingTask, setSubmittingTask] = useState({});
   function load() { goalService.getGoals().then(setGoals).catch(() => {}); }
   useEffect(() => { load(); }, []);
 
   const loadTasksForGoal = useCallback(async (goalId) => {
+    setLoadingTasks(prev => ({ ...prev, [goalId]: true }));
     try { const tasks = await taskService.getTasks({ goalId }); setGoalTasks(prev => ({ ...prev, [goalId]: tasks })); }
     catch { addToast('Error al cargar tareas del objetivo', 'error'); }
+    finally { setLoadingTasks(prev => ({ ...prev, [goalId]: false })); }
   }, []);
 
   function toggleExpand(goal) {
@@ -52,12 +56,14 @@ export default function Goals() {
 
   async function handleAddTask(goalId) {
     const title = newTaskText[goalId]?.trim(); if (!title) return;
+    setSubmittingTask(prev => ({ ...prev, [goalId]: true }));
     try {
       await taskService.createTask({ title, goalId });
       setNewTaskText(prev => ({ ...prev, [goalId]: '' }));
       loadTasksForGoal(goalId);
       load();
     } catch (err) { addToast(err.response?.data?.error || 'Error al crear la tarea', 'error'); }
+    finally { setSubmittingTask(prev => ({ ...prev, [goalId]: false })); }
   }
 
   function computeProgress(goal) {
@@ -117,7 +123,13 @@ export default function Goals() {
                     {goal.targetDate && (<><span>·</span><span>Hasta {new Date(goal.targetDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</span></>)}
                   </div>
 
-                  {tasks && tasks.length > 0 && (
+                  {loadingTasks[goal.id] && (
+                    <div className="flex items-center justify-center py-4">
+                      <div className="w-5 h-5 border-2 border-primary-600 dark:border-primary-400 border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+
+                  {!loadingTasks[goal.id] && tasks && tasks.length > 0 && (
                     <div className="space-y-0.5 mb-3">
                       {tasks.map(task => (
                         <div key={task.id} className="flex items-center gap-2.5 py-1.5 px-2 rounded-md hover:bg-gray-50 dark:hover:bg-neutral-800/50 group">
@@ -130,11 +142,13 @@ export default function Goals() {
                     </div>
                   )}
 
-                  {tasks && tasks.length === 0 && <p className="text-xs text-gray-400 dark:text-neutral-500 py-2">Sin tareas asociadas</p>}
+                  {!loadingTasks[goal.id] && tasks && tasks.length === 0 && <p className="text-xs text-gray-400 dark:text-neutral-500 py-2">Sin tareas asociadas</p>}
 
                   <div className="flex gap-2">
-                    <input type="text" placeholder="Añadir tarea..." value={newTaskText[goal.id] || ''} onChange={e => setNewTaskText(prev => ({ ...prev, [goal.id]: e.target.value }))} onKeyDown={e => { if (e.key === 'Enter') handleAddTask(goal.id); }} className="input text-sm flex-1 h-8" />
-                    <button onClick={() => handleAddTask(goal.id)} className="btn-primary btn-sm px-2.5"><PlusIcon size={14} /></button>
+                    <input type="text" placeholder="Añadir tarea..." value={newTaskText[goal.id] || ''} onChange={e => setNewTaskText(prev => ({ ...prev, [goal.id]: e.target.value }))} onKeyDown={e => { if (e.key === 'Enter') handleAddTask(goal.id); }} className="input text-sm flex-1 h-8" disabled={submittingTask[goal.id]} />
+                    <button onClick={() => handleAddTask(goal.id)} className="btn-primary btn-sm px-2.5" disabled={submittingTask[goal.id]}>
+                      {submittingTask[goal.id] ? <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <PlusIcon size={14} />}
+                    </button>
                   </div>
 
                   <div className="flex gap-2 mt-3 pt-2 border-t border-gray-50 dark:border-neutral-700">
