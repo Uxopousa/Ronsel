@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
 import BrandLogo from '../ui/BrandLogo';
 import ThemeToggle from '../ui/ThemeToggle';
 import SearchPalette from '../ui/SearchPalette';
@@ -34,7 +33,6 @@ function isTouchDevice() {
 
 export default function Layout() {
   const { user, logout } = useAuth();
-  const { theme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [modKey, setModKey] = useState('');

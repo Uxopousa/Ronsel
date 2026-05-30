@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ListTodo, Flame, Target, ChevronRight, ChevronLeft, CalendarDays,
-  AlertCircle, Plus, X, CheckCircle, Check, Eye, EyeOff, Palette, Edit3,
+  AlertCircle, Plus, X, CheckCircle, Check, Eye, Palette,
 } from 'lucide-react';
 import api from '../services/api';
 import * as taskService from '../services/tasks';
