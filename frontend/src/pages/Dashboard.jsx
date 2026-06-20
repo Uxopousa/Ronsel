@@ -16,7 +16,6 @@ const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
 
 const LS_VIEW = 'dash_calView';
 const LS_SHOW_HABITS = 'dash_showHabits';
-const LS_SHOW_COMPLETED = 'dash_showCompleted';
 const LS_COLOR_PRIORITY = 'dash_colorPriority';
 
 export default function Dashboard() {
@@ -28,7 +27,6 @@ export default function Dashboard() {
   const [dayModal, setDayModal] = useState(null);
   const [quickTask, setQuickTask] = useState(null);
   const [showHabits, setShowHabits] = useState(() => localStorage.getItem(LS_SHOW_HABITS) === 'true');
-  const [showCompleted, setShowCompleted] = useState(() => localStorage.getItem(LS_SHOW_COMPLETED) === 'true');
   const [colorPriority, setColorPriority] = useState(() => localStorage.getItem(LS_COLOR_PRIORITY) === 'true');
   const [pendingHabits, setPendingHabits] = useState([]);
   const [allHabits, setAllHabits] = useState([]);
@@ -90,7 +88,6 @@ export default function Dashboard() {
   function persist(key, val) { localStorage.setItem(key, val); }
   function setView(v) { setCalView(v); persist(LS_VIEW, v); }
   function toggleShowHabits(v) { setShowHabits(v); persist(LS_SHOW_HABITS, v); }
-  function toggleShowCompleted(v) { setShowCompleted(v); persist(LS_SHOW_COMPLETED, v); }
   function toggleColorPriority(v) { setColorPriority(v); persist(LS_COLOR_PRIORITY, v); }
 
   if (loading) return <p className="text-gray-400 dark:text-neutral-500 text-sm py-8 text-center">Cargando...</p>;
@@ -196,40 +193,26 @@ export default function Dashboard() {
       )}
 
       <section className="mb-6">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="section-title">Calendario</h2>
-          <div className="flex items-center gap-2">
-            <div className="flex bg-gray-100 dark:bg-neutral-800 rounded-md p-0.5 gap-0.5">
-              {['Día','3 días','Semana','Mes'].map(label => {
-                const key = label === 'Día' ? 'day' : label === '3 días' ? '3day' : label === 'Semana' ? 'week' : 'month';
-                const active = calView === key;
-                return (
-                  <button key={key} onClick={() => setView(key)}
-                    className={`px-2.5 py-1 text-xs rounded font-medium transition-colors ${active ? 'bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100 shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-200'}`}>
-                    {label}
-                  </button>
-                );
-              })}
+          <div className="flex items-center gap-3">
+            <div className="flex bg-gray-100 dark:bg-neutral-800 rounded-md p-0.5">
+              {[{k:'day',l:'Día'},{k:'3day',l:'3 días'},{k:'week',l:'Semana'},{k:'month',l:'Mes'}].map(({k,l}) => (
+                <button key={k} onClick={() => setView(k)}
+                  className={`px-3 py-1.5 text-xs rounded font-medium transition-all ${calView === k ? 'bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100 shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-200'}`}>
+                  {l}
+                </button>
+              ))}
             </div>
-            <label className="flex items-center gap-1 text-xs text-gray-500 dark:text-neutral-400 cursor-pointer select-none">
-              <input type="checkbox" checked={showHabits} onChange={e => toggleShowHabits(e.target.checked)} className="w-3 h-3 rounded accent-primary-600" />
-              <Eye size={12} className={showHabits ? 'text-primary-600 dark:text-primary-400' : ''} />
-            </label>
-            <label className="flex items-center gap-1 text-xs text-gray-500 dark:text-neutral-400 cursor-pointer select-none">
-              <input type="checkbox" checked={showCompleted} onChange={e => toggleShowCompleted(e.target.checked)} className="w-3 h-3 rounded accent-primary-600" />
-              <Check size={12} className={showCompleted ? 'text-primary-600 dark:text-primary-400' : ''} />
-            </label>
-            <label className="flex items-center gap-1 text-xs text-gray-500 dark:text-neutral-400 cursor-pointer select-none">
-              <input type="checkbox" checked={colorPriority} onChange={e => toggleColorPriority(e.target.checked)} className="w-3 h-3 rounded accent-primary-600" />
-              <Palette size={12} className={colorPriority ? 'text-primary-600 dark:text-primary-400' : ''} />
-            </label>
+            <ToggleSwitch checked={showHabits} onChange={toggleShowHabits} icon={Eye} label="Hábitos" />
+            <ToggleSwitch checked={colorPriority} onChange={toggleColorPriority} icon={Palette} label="Prioridad" />
           </div>
         </div>
 
         {calView === 'month' ? (
-          <MonthView date={calDate} allTasks={allTasks} todayStr={todayStr} onPrev={() => navMonth(-1)} onNext={() => navMonth(1)} onDayClick={handleDayClick} colorPriority={colorPriority} showCompleted={showCompleted} showHabits={showHabits} allHabits={allHabits} />
+          <MonthView date={calDate} allTasks={allTasks} todayStr={todayStr} onPrev={() => navMonth(-1)} onNext={() => navMonth(1)} onDayClick={handleDayClick} colorPriority={colorPriority} showHabits={showHabits} allHabits={allHabits} />
         ) : (
-          <MultiDayView calView={calView} allTasks={allTasks} todayStr={todayStr} yesterdayStr={yesterdayStr} tomorrowStr={tomorrowStr} onDayClick={handleDayClick} colorPriority={colorPriority} showCompleted={showCompleted} showHabits={showHabits} allHabits={allHabits} />
+          <MultiDayView calView={calView} allTasks={allTasks} todayStr={todayStr} yesterdayStr={yesterdayStr} tomorrowStr={tomorrowStr} onDayClick={handleDayClick} colorPriority={colorPriority} showHabits={showHabits} allHabits={allHabits} />
         )}
       </section>
 
@@ -310,31 +293,44 @@ function SummaryCard({ title, count, doneLabel, link, icon: Icon, color }) {
   );
 }
 
-function priorityColor(p) {
-  if (p === 'HIGH') return 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300';
-  if (p === 'MEDIUM') return 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300';
-  return 'bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400';
+function ToggleSwitch({ checked, onChange, icon: Icon, label }) {
+  return (
+    <button
+      onClick={() => onChange(!checked)}
+      className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-300 transition-colors select-none"
+      title={label}
+    >
+      <div className={`w-7 h-4 rounded-full transition-colors relative ${checked ? 'bg-primary-500 dark:bg-primary-600' : 'bg-gray-300 dark:bg-neutral-600'}`}>
+        <div className={`w-3 h-3 rounded-full bg-white shadow-sm absolute top-0.5 transition-all ${checked ? 'left-3.5' : 'left-0.5'}`} />
+      </div>
+      <Icon size={12} className={checked ? 'text-primary-600 dark:text-primary-400' : ''} />
+    </button>
+  );
 }
 
 function taskChipColor(t, colorPriority) {
-  if (t.status === 'COMPLETED') return colorPriority ? 'bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-300 line-through' : 'bg-gray-50 dark:bg-neutral-800 text-gray-400 dark:text-neutral-600 line-through';
-  if (colorPriority) return priorityColor(t.priority);
+  if (t.status === 'COMPLETED') return 'bg-gray-50 dark:bg-neutral-800 text-gray-400 dark:text-neutral-500 line-through';
+  if (colorPriority) {
+    if (t.priority === 'HIGH') return 'bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-300';
+    if (t.priority === 'MEDIUM') return 'bg-orange-50 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300';
+    return 'bg-gray-50 dark:bg-neutral-800 text-gray-500 dark:text-neutral-400';
+  }
   return 'bg-primary-50 dark:bg-primary-500/15 text-primary-700 dark:text-primary-300';
 }
 
-function MultiDayView({ calView, allTasks, todayStr, yesterdayStr, tomorrowStr, onDayClick, colorPriority, showCompleted, showHabits, allHabits }) {
+function MultiDayView({ calView, allTasks, todayStr, yesterdayStr, tomorrowStr, onDayClick, colorPriority, showHabits, allHabits }) {
   let days = [];
   if (calView === 'day') {
     const d = new Date(todayStr + 'T00:00:00');
-    days = [{ date: todayStr, label: dayNames[d.getDay()], dayNum: d.getDate(), isToday: true }];
+    days = [{ date: todayStr, label: dayNames[d.getDay()], dayNum: d.getDate(), month: months[d.getMonth()].slice(0,3), isToday: true }];
   } else if (calView === '3day') {
-    const yesterday = new Date(yesterdayStr + 'T00:00:00');
-    const today = new Date(todayStr + 'T00:00:00');
-    const tomorrow = new Date(tomorrowStr + 'T00:00:00');
+    const yd = new Date(yesterdayStr + 'T00:00:00');
+    const td = new Date(todayStr + 'T00:00:00');
+    const tmd = new Date(tomorrowStr + 'T00:00:00');
     days = [
-      { date: yesterdayStr, label: dayNames[yesterday.getDay()], dayNum: yesterday.getDate(), isToday: false },
-      { date: todayStr, label: dayNames[today.getDay()], dayNum: today.getDate(), isToday: true },
-      { date: tomorrowStr, label: dayNames[tomorrow.getDay()], dayNum: tomorrow.getDate(), isToday: false },
+      { date: yesterdayStr, label: dayNames[yd.getDay()], dayNum: yd.getDate(), month: months[yd.getMonth()].slice(0,3), isToday: false, isAyer: true },
+      { date: todayStr, label: dayNames[td.getDay()], dayNum: td.getDate(), month: months[td.getMonth()].slice(0,3), isToday: true },
+      { date: tomorrowStr, label: dayNames[tmd.getDay()], dayNum: tmd.getDate(), month: months[tmd.getMonth()].slice(0,3), isToday: false, isManana: true },
     ];
   } else {
     const dow = new Date(todayStr).getDay();
@@ -342,41 +338,63 @@ function MultiDayView({ calView, allTasks, todayStr, yesterdayStr, tomorrowStr, 
     for (let i = 0; i < 7; i++) {
       const d = new Date(monday); d.setDate(monday.getDate() + i);
       const ds = d.toISOString().slice(0, 10);
-      days.push({ date: ds, label: weekDays[i], dayNum: d.getDate(), isToday: ds === todayStr });
+      days.push({ date: ds, label: weekDays[i], dayNum: d.getDate(), month: months[d.getMonth()].slice(0,3), isToday: ds === todayStr });
     }
   }
 
-  const colClass = calView === 'day' ? '' : calView === '3day' ? 'grid-cols-3' : 'grid-cols-7';
+  if (days.length === 0) return null;
 
   return (
-    <div className={`grid ${colClass} gap-1.5`}>
+    <div className={`grid gap-2 ${days.length === 1 ? '' : days.length === 3 ? 'grid-cols-3' : 'grid-cols-7'}`}>
       {days.map(day => {
-        let dayTasks = allTasks[day.date] || [];
-        if (!showCompleted) dayTasks = dayTasks.filter(t => t.status !== 'COMPLETED');
+        const dayTasks = allTasks[day.date] || [];
         const habitsToday = showHabits ? (allHabits || []) : [];
+        const isDayView = days.length === 1;
+        const isCompact = days.length === 7;
         return (
-          <button key={day.date} onClick={() => onDayClick(day.date, dayTasks)}
-            className={`rounded-md p-2 text-left transition-all ${calView === 'day' ? 'min-h-[200px]' : calView === '3day' ? 'min-h-[160px]' : 'min-h-[80px]'} ${day.isToday ? 'ring-1 ring-primary-300 dark:ring-primary-500 bg-white dark:bg-neutral-900' : 'bg-white dark:bg-neutral-900 card'}`}>
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[0.625rem] text-gray-400 dark:text-neutral-500 font-medium">
-                {calView === '3day' ? (day.date === yesterdayStr ? 'Ayer' : day.date === tomorrowStr ? 'Mañana' : 'Hoy') : day.label}
-              </span>
-              <span className={`text-xs font-medium ${day.isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-neutral-400'}`}>
-                {day.date === todayStr ? day.dayNum : day.dayNum}
-                {calView !== 'day' && ` ${months[parseInt(day.date.slice(5,7))-1].slice(0,3)}`}
+          <button
+            key={day.date}
+            onClick={() => onDayClick(day.date, dayTasks)}
+            className={`rounded-lg text-left transition-all overflow-hidden ${
+              isDayView ? 'min-h-[400px] p-4' : isCompact ? 'min-h-[100px] p-1.5' : 'min-h-[220px] p-3'
+            } ${day.isToday ? 'ring-2 ring-primary-400 dark:ring-primary-500 bg-white dark:bg-neutral-900 ring-offset-0' : 'bg-white dark:bg-neutral-900 card'}`}
+          >
+            <div className={`flex items-center justify-between ${isDayView ? 'mb-4' : 'mb-2'}`}>
+              <div>
+                <span className={`${isDayView ? 'text-sm font-semibold' : isCompact ? 'text-[0.6875rem] font-medium' : 'text-xs font-semibold'} ${day.isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-neutral-200'}`}>
+                  {day.isAyer ? 'Ayer' : day.isManana ? 'Mañana' : day.isToday ? 'Hoy' : day.label}
+                </span>
+                {isDayView && (
+                  <p className="text-xs text-gray-400 dark:text-neutral-500 mt-0.5">{day.label}, {day.dayNum} de {day.month}</p>
+                )}
+              </div>
+              <span className={`${isDayView ? 'text-2xl font-bold' : isCompact ? 'text-sm font-semibold' : 'text-xl font-bold'} ${day.isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-800 dark:text-neutral-100'}`}>
+                {day.dayNum}
+                {!isDayView && <span className={`${isDayView ? 'text-sm font-normal ml-1' : isCompact ? 'text-[0.625rem] font-normal ml-0.5' : 'text-xs font-normal ml-1'} text-gray-400 dark:text-neutral-500`}>{day.month}</span>}
               </span>
             </div>
-            <div className="space-y-0.5">
-              {dayTasks.slice(0, calView === 'day' ? 8 : calView === '3day' ? 5 : 3).map(t => (
-                <div key={t.id} className={`text-[0.625rem] px-1 py-0.5 rounded truncate leading-tight ${taskChipColor(t, colorPriority)}`}>{t.title}</div>
+            <div className={`space-y-${isDayView ? '1.5' : '1'}`}>
+              {dayTasks.slice(0, isDayView ? 12 : isCompact ? 3 : 6).map(t => (
+                <div key={t.id} className={`${isCompact ? 'text-[0.6875rem] px-1 py-0.5' : 'text-xs px-2 py-1'} rounded truncate ${taskChipColor(t, colorPriority)}`}>
+                  {t.title}
+                </div>
               ))}
-              {dayTasks.length > (calView === 'day' ? 8 : calView === '3day' ? 5 : 3) && <p className="text-[0.625rem] text-gray-400 dark:text-neutral-500">+{dayTasks.length - (calView === 'day' ? 8 : calView === '3day' ? 5 : 3)} más</p>}
-              {showHabits && habitsToday.filter(h => h.completedToday).length > 0 && (
-                <div className="flex flex-wrap gap-0.5 mt-1">
-                  {habitsToday.filter(h => h.completedToday).slice(0, 2).map(h => (
-                    <div key={h.id} className="text-[0.5rem] px-1 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300 truncate">{h.name}</div>
+              {dayTasks.length > (isDayView ? 12 : isCompact ? 3 : 6) && (
+                <p className={`${isCompact ? 'text-[0.625rem]' : 'text-xs'} text-gray-400 dark:text-neutral-500 pl-1`}>+{dayTasks.length - (isDayView ? 12 : isCompact ? 3 : 6)} más</p>
+              )}
+              {dayTasks.length === 0 && isDayView && (
+                <p className="text-sm text-gray-300 dark:text-neutral-600 py-8 text-center">Sin tareas</p>
+              )}
+              {showHabits && habitsToday.length > 0 && (
+                <div className={`flex flex-wrap gap-1 ${isDayView ? 'mt-3 pt-3 border-t border-gray-50 dark:border-neutral-800' : 'mt-1'}`}>
+                  {habitsToday.slice(0, isDayView ? 10 : 3).map(h => (
+                    <div key={h.id} className={`${isCompact ? 'text-[0.625rem] px-1 py-0.5' : 'text-xs px-1.5 py-0.5'} rounded bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 truncate ${h.completedToday ? 'line-through opacity-60' : 'font-medium'}`}>
+                      {h.name}
+                    </div>
                   ))}
-                  {habitsToday.filter(h => h.completedToday).length > 2 && <span className="text-[0.5rem] text-gray-400">+{habitsToday.filter(h => h.completedToday).length - 2}</span>}
+                  {habitsToday.length > (isDayView ? 10 : 3) && (
+                    <span className={`${isCompact ? 'text-[0.625rem]' : 'text-xs'} text-gray-400 dark:text-neutral-500`}>+{habitsToday.length - (isDayView ? 10 : 3)}</span>
+                  )}
                 </div>
               )}
             </div>
@@ -387,33 +405,41 @@ function MultiDayView({ calView, allTasks, todayStr, yesterdayStr, tomorrowStr, 
   );
 }
 
-function MonthView({ date, allTasks, todayStr, onPrev, onNext, onDayClick, colorPriority, showCompleted, showHabits, allHabits }) {
+function MonthView({ date, allTasks, todayStr, onPrev, onNext, onDayClick, colorPriority, showHabits, allHabits }) {
   const year = date.getFullYear(); const month = date.getMonth() + 1;
   const daysInMonth = new Date(year, month, 0).getDate();
   const firstDay = new Date(year, month - 1, 1).getDay();
   const startOffset = firstDay === 0 ? 6 : firstDay - 1;
   return (
-    <div className="card p-3">
-      <div className="flex items-center justify-between mb-3">
+    <div className="card p-4">
+      <div className="flex items-center justify-between mb-4">
         <button onClick={onPrev} className="btn-ghost btn-sm p-1.5"><ChevronLeft size={16} /></button>
-        <span className="text-sm font-medium text-gray-700 dark:text-neutral-200">{months[month - 1]} {year}</span>
+        <span className="text-sm font-semibold text-gray-700 dark:text-neutral-200">{months[month - 1]} {year}</span>
         <button onClick={onNext} className="btn-ghost btn-sm p-1.5"><ChevronRight size={16} /></button>
       </div>
-      <div className="grid grid-cols-7 gap-0.5">
-        {weekDays.map(d => <div key={d} className="text-[0.625rem] text-gray-400 dark:text-neutral-500 font-medium text-center py-1">{d}</div>)}
-        {Array.from({ length: startOffset }).map((_, i) => <div key={`e${i}`} />)}
+      <div className="grid grid-cols-7 text-center">
+        {weekDays.map(d => <div key={d} className="text-xs font-medium text-gray-400 dark:text-neutral-500 py-2">{d}</div>)}
+        {Array.from({ length: startOffset }).map((_, i) => <div key={`e${i}`} className="py-1" />)}
         {Array.from({ length: daysInMonth }, (_, i) => {
           const day = i + 1; const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`; const isToday = dateStr === todayStr;
-          let dayTasks = allTasks[dateStr] || [];
-          if (!showCompleted) dayTasks = dayTasks.filter(t => t.status !== 'COMPLETED');
+          const dayTasks = allTasks[dateStr] || [];
+          const count = dayTasks.length;
           return (
             <button key={day} onClick={() => onDayClick(dateStr, dayTasks)}
-              className={`p-1.5 rounded-md text-left min-h-[56px] transition-all hover:bg-gray-50 dark:hover:bg-neutral-800 ${isToday ? 'ring-1 ring-primary-300 dark:ring-primary-500 bg-primary-50/30 dark:bg-primary-500/10' : ''}`}>
-              <span className={`text-xs font-medium ${isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-600 dark:text-neutral-400'}`}>{day}</span>
-              {dayTasks.length > 0 && (
-                <div className="mt-0.5 space-y-0.5">
-                  {dayTasks.slice(0, 2).map(t => <div key={t.id} className={`text-[0.5rem] px-0.5 py-0.5 rounded truncate leading-tight ${taskChipColor(t, colorPriority)}`}>{t.title}</div>)}
-                  {dayTasks.length > 2 && <p className="text-[0.5rem] text-gray-400 dark:text-neutral-500">+{dayTasks.length - 2}</p>}
+              className={`py-1.5 rounded-md text-center transition-all hover:bg-gray-50 dark:hover:bg-neutral-800 ${isToday ? 'bg-primary-50 dark:bg-primary-500/10' : ''}`}>
+              <span className={`text-xs font-semibold ${isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-600 dark:text-neutral-300'}`}>{day}</span>
+              {count > 0 && (
+                <div className="flex justify-center gap-0.5 mt-1">
+                  {Array.from({ length: Math.min(count, 3) }).map((_, j) => {
+                    const t = dayTasks[j];
+                    const cls = t.status === 'COMPLETED'
+                      ? 'bg-gray-200 dark:bg-neutral-700'
+                      : colorPriority
+                        ? t.priority === 'HIGH' ? 'bg-red-400 dark:bg-red-500' : t.priority === 'MEDIUM' ? 'bg-orange-400 dark:bg-orange-500' : 'bg-gray-400 dark:bg-gray-500'
+                        : 'bg-primary-400 dark:bg-primary-500';
+                    return <div key={j} className={`w-1.5 h-1.5 rounded-full ${cls}`} />;
+                  })}
+                  {count > 3 && <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-neutral-600" />}
                 </div>
               )}
             </button>
