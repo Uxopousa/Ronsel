@@ -65,12 +65,13 @@ export default function Dashboard() {
 
   useEffect(() => {
     let from, to;
-    if (calView === 'day') { from = todayStr; to = todayStr; }
-    else if (calView === '3day') { from = yesterdayStr; to = tomorrowStr; }
+    const afterTomorrow = (() => { const d = new Date(tomorrowStr + 'T00:00:00'); d.setDate(d.getDate() + 1); return d.toISOString().slice(0,10); })();
+    if (calView === 'day') { from = todayStr; to = tomorrowStr; }
+    else if (calView === '3day') { from = yesterdayStr; to = afterTomorrow; }
     else if (calView === 'week') {
       const dow = today.getDay(); const monday = new Date(today); monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1)); monday.setHours(0,0,0,0);
-      const sunday = new Date(monday); sunday.setDate(sunday.getDate() + 6);
-      from = monday.toISOString().slice(0,10); to = sunday.toISOString().slice(0,10);
+      const nextMonday = new Date(monday); nextMonday.setDate(monday.getDate() + 7);
+      from = monday.toISOString().slice(0,10); to = nextMonday.toISOString().slice(0,10);
     } else {
       const y = calDate.getFullYear(); const m = calDate.getMonth() + 1;
       from = `${y}-${String(m).padStart(2,'0')}-01`;
@@ -101,9 +102,9 @@ export default function Dashboard() {
       const ns = task.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
       await taskService.updateTask(task.id, { status: ns });
       reloadDashboard();
-      const from = calView === 'month' ? `${calDate.getFullYear()}-${String(calDate.getMonth()+1).padStart(2,'0')}-01` : yesterdayStr;
-      const to = calView === 'month' ? `${calDate.getFullYear()}-${String(calDate.getMonth()+1).padStart(2,'0')}-31` : tomorrowStr;
-      loadTasks(from, to);
+      const refFrom = calView === 'month' ? `${calDate.getFullYear()}-${String(calDate.getMonth()+1).padStart(2,'0')}-01` : yesterdayStr;
+      const refTo = calView === 'month' ? `${calDate.getFullYear()}-${String(calDate.getMonth()+1).padStart(2,'0')}-${new Date(calDate.getFullYear(), calDate.getMonth()+1, 0).getDate()}` : (() => { const d = new Date(tomorrowStr); d.setDate(d.getDate() + 1); return d.toISOString().slice(0,10); })();
+      loadTasks(refFrom, refTo);
     } catch { addToast('Error al actualizar la tarea', 'error'); }
   }
 
