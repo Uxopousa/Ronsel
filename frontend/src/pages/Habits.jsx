@@ -4,7 +4,7 @@ import * as categoryService from '../services/categories';
 import HabitModal from '../components/shared/HabitModal';
 import { useToast } from '../components/ui/Toast';
 import {
-  Plus, Edit3, Trash2, Check, Zap, TrendingUp, CalendarDays, ChevronDown, ChevronUp, Flame,
+  Plus, Edit3, Trash2, Check, Zap, TrendingUp, ChevronDown, ChevronUp, Flame,
 } from 'lucide-react';
 
 const weekDays = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -20,7 +20,6 @@ export default function Habits() {
     habitService.getHabits().then(setHabits).catch(() => {});
     categoryService.getCategories().then(setCategories).catch(() => {});
   }
-
   useEffect(() => { load(); }, []);
 
   const addToast = useToast();
@@ -109,9 +108,11 @@ function HabitCard({ habit, expanded, onToggle, onEdit, onDelete, onExpand }) {
       .catch(() => {});
   }, [habit.id]);
 
+  const freqLabel = habit.frequency === 'DAILY' ? 'Diario' : 'Semanal';
+
   return (
-    <div className="card overflow-hidden">
-      <div className="flex items-center gap-3 px-4 py-3">
+    <div className="card overflow-hidden cursor-pointer" onClick={onEdit}>
+      <div className="flex items-center gap-3 px-4 py-3" onClick={e => e.stopPropagation()}>
         <button onClick={onToggle}
           className={`w-7 h-7 rounded-md flex items-center justify-center transition-all flex-shrink-0 ${habit.completedToday ? 'bg-green-500 text-white shadow-sm' : 'bg-gray-50 dark:bg-neutral-800 text-gray-400 dark:text-neutral-500 hover:bg-green-50 dark:hover:bg-green-500/15 hover:text-green-500 dark:hover:text-green-400 border border-gray-100 dark:border-neutral-700'}`}>
           <Check size={14} strokeWidth={habit.completedToday ? 3 : 2} />
@@ -119,30 +120,23 @@ function HabitCard({ habit, expanded, onToggle, onEdit, onDelete, onExpand }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-900 dark:text-neutral-100 truncate">{habit.name}</span>
-            {habit.category && <span className="text-[0.625rem] px-1.5 py-0.5 rounded-sm font-medium" style={{ backgroundColor: habit.category.color + '18', color: habit.category.color }}>{habit.category.name}</span>}
+            {habit.category && <span className="text-[0.625rem] px-1.5 py-0.5 rounded-sm font-medium truncate" style={{ backgroundColor: habit.category.color + '18', color: habit.category.color }}>{habit.category.name}</span>}
           </div>
         </div>
-        <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-neutral-500">
-          <div className="hidden sm:flex items-center gap-1.5">
-            <span className="flex items-center gap-0.5"><Zap size={11} /><strong className="text-gray-600 dark:text-neutral-300">{habit.currentStreak}</strong></span>
-            <span className="text-gray-200 dark:text-neutral-700">·</span>
-            <span className="flex items-center gap-0.5"><TrendingUp size={11} /><strong className="text-gray-600 dark:text-neutral-300">{habit.longestStreak}</strong></span>
-            <span className="text-gray-200 dark:text-neutral-700">·</span>
-            <span className="capitalize text-[0.625rem]">{habit.frequency === 'DAILY' ? 'Diario' : 'Semanal'}</span>
+        <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-neutral-500">
+          <div className="hidden sm:flex items-center gap-0.5"><Zap size={11} /><strong className="text-gray-600 dark:text-neutral-300">{habit.currentStreak}</strong></div>
+          <span className="hidden sm:inline text-gray-200 dark:text-neutral-700">·</span>
+          <div className="hidden sm:flex items-center gap-0.5"><TrendingUp size={11} /><strong className="text-gray-600 dark:text-neutral-300">{habit.longestStreak}</strong></div>
+          <span className="hidden sm:inline text-gray-200 dark:text-neutral-700">·</span>
+          <span className="hidden sm:inline capitalize text-[0.625rem]">{freqLabel}</span>
+          <span className="text-gray-200 dark:text-neutral-700">·</span>
+          <div className="flex items-center gap-1">
+            {getWeekDays(weekData).map((day, i) => (
+              <div key={i} className={`w-2.5 h-2.5 rounded-sm ${day.completed ? 'bg-green-400 dark:bg-green-500' : day.future ? 'bg-gray-100 dark:bg-neutral-800' : 'bg-gray-200 dark:bg-neutral-700'}`} title={`${weekDays[i]}: ${day.completed ? '✓' : day.future ? '—' : '✗'}`} />
+            ))}
           </div>
-          <div className="flex gap-1 sm:gap-3">
-            <button onClick={onEdit} className="btn-ghost btn-sm p-1"><Edit3 size={12} /></button>
-            <button onClick={onDelete} className="btn-ghost btn-sm p-1 hover:text-red-500 dark:hover:text-red-400"><Trash2 size={12} /></button>
-          </div>
-          <button onClick={onExpand} className="btn-ghost btn-sm p-1">{expanded ? <ChevronUp size={14} /> : <CalendarDays size={14} />}</button>
+          <button onClick={e => { e.stopPropagation(); onExpand(); }} className="btn-ghost btn-sm p-1 ml-1">{expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</button>
         </div>
-      </div>
-
-      <div className="flex items-center gap-1 px-4 pb-3">
-        {getWeekDays(weekData).map((day, i) => (
-          <div key={i} className={`w-3 h-3 rounded-sm ${day.completed ? 'bg-green-400 dark:bg-green-600' : day.future ? 'bg-gray-100 dark:bg-neutral-800' : 'bg-gray-200 dark:bg-neutral-700'}`} title={`${weekDays[i]}: ${day.completed ? '✓' : day.future ? '—' : '✗'}`} />
-        ))}
-        <span className="text-[0.625rem] text-gray-400 dark:text-neutral-500 ml-1.5">Esta semana</span>
       </div>
 
       {expanded && <HabitCalendarInline habitId={habit.id} />}
@@ -168,7 +162,7 @@ function HabitCalendarInline({ habitId }) {
   const todayStr = new Date().toISOString().slice(0, 10);
 
   return (
-    <div className="px-4 pb-4 pt-3 border-t border-gray-50 dark:border-neutral-700 animate-fade-in">
+    <div className="px-4 pb-4 pt-3 border-t border-gray-50 dark:border-neutral-700 animate-fade-in" onClick={e => e.stopPropagation()}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex gap-1">
           <button onClick={() => { if (month === 1) { setYear(y => y - 1); setMonth(12); } else setMonth(m => m - 1); }} className="btn-ghost btn-sm p-1"><ChevronDown size={12} className="rotate-90" /></button>
@@ -180,13 +174,8 @@ function HabitCalendarInline({ habitId }) {
         {weekDays.map(d => <div key={d} className="text-[0.5rem] text-gray-400 dark:text-neutral-500 font-medium text-center py-0.5">{d}</div>)}
         {Array.from({ length: startOffset }).map((_, i) => <div key={`e${i}`} />)}
         {Array.from({ length: daysInMonth }, (_, i) => {
-          const day = i + 1;
-          const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-          const isToday = dateStr === todayStr;
-          const completed = days.days?.[day];
-          return (
-            <div key={day} className={`py-1 text-center text-xs rounded-sm ${completed === true ? 'bg-green-500 text-white font-medium' : completed === false ? 'bg-red-50 dark:bg-red-500/15 text-red-500 dark:text-red-400' : 'text-gray-500 dark:text-neutral-400'} ${isToday ? 'ring-1 ring-primary-300 dark:ring-primary-500' : ''}`}>{day}</div>
-          );
+          const day = i + 1; const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`; const isToday = dateStr === todayStr; const completed = days.days?.[day];
+          return <div key={day} className={`py-1 text-center text-xs rounded-sm ${completed === true ? 'bg-green-500 text-white font-medium' : completed === false ? 'bg-red-50 dark:bg-red-500/15 text-red-500 dark:text-red-400' : 'text-gray-500 dark:text-neutral-400'} ${isToday ? 'ring-1 ring-primary-300 dark:ring-primary-500' : ''}`}>{day}</div>;
         })}
       </div>
     </div>

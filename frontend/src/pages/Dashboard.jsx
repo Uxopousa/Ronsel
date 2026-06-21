@@ -14,24 +14,31 @@ const weekDays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
+const LS_VIEW = 'dash_calView';
 const LS_SHOW_HABITS = 'dash_showHabits';
+const LS_SHOW_COMPLETED = 'dash_showCompleted';
 const LS_COLOR_PRIORITY = 'dash_colorPriority';
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState('week');
+  const [calView, setCalView] = useState(() => localStorage.getItem(LS_VIEW) || '3day');
   const [calDate, setCalDate] = useState(new Date());
-  const [monthTasks, setMonthTasks] = useState({});
+  const [allTasks, setAllTasks] = useState({});
   const [dayModal, setDayModal] = useState(null);
   const [quickTask, setQuickTask] = useState(null);
   const [showHabits, setShowHabits] = useState(() => localStorage.getItem(LS_SHOW_HABITS) === 'true');
+  const [showCompleted, setShowCompleted] = useState(() => localStorage.getItem(LS_SHOW_COMPLETED) === 'true');
   const [colorPriority, setColorPriority] = useState(() => localStorage.getItem(LS_COLOR_PRIORITY) === 'true');
   const [pendingHabits, setPendingHabits] = useState([]);
+  const [allHabits, setAllHabits] = useState([]);
   const addToast = useToast();
 
   const today = new Date();
   const todayStr = today.toISOString().slice(0, 10);
+
+  const yesterdayStr = (() => { const d = new Date(today); d.setDate(d.getDate() - 1); return d.toISOString().slice(0,10); })();
+  const tomorrowStr = (() => { const d = new Date(today); d.setDate(d.getDate() + 1); return d.toISOString().slice(0,10); })();
 
   function reloadDashboard() {
     api.get('/dashboard')
@@ -40,15 +47,10 @@ export default function Dashboard() {
       .finally(() => setLoading(false));
   }
 
-  useEffect(() => {
-    reloadDashboard();
-  }, []);
+  useEffect(() => { reloadDashboard(); }, []);
 
-  const loadMonthTasks = useCallback(async (year, month) => {
+  const loadTasks = useCallback(async (from, to) => {
     try {
-      const from = `${year}-${String(month).padStart(2, '0')}-01`;
-      const lastDay = new Date(year, month, 0).getDate();
-      const to = `${year}-${String(month).padStart(2, '0')}-${lastDay}`;
       const tasks = await taskService.getTasks({ dueDateFrom: from, dueDateTo: to });
       const grouped = {};
       for (const t of tasks) {
@@ -57,18 +59,39 @@ export default function Dashboard() {
         if (!grouped[d]) grouped[d] = [];
         grouped[d].push(t);
       }
-      setMonthTasks(grouped);
+      setAllTasks(grouped);
     } catch {
-      addToast('Error al cargar tareas del mes', 'error');
+      addToast('Error al cargar tareas del calendario', 'error');
     }
   }, []);
 
   useEffect(() => {
-    if (view === 'month') loadMonthTasks(calDate.getFullYear(), calDate.getMonth() + 1);
-  }, [view, calDate, loadMonthTasks]);
+    let from, to;
+    if (calView === 'day') { from = todayStr; to = todayStr; }
+    else if (calView === '3day') { from = yesterdayStr; to = tomorrowStr; }
+    else if (calView === 'week') {
+      const dow = today.getDay(); const monday = new Date(today); monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1)); monday.setHours(0,0,0,0);
+      const sunday = new Date(monday); sunday.setDate(sunday.getDate() + 6);
+      from = monday.toISOString().slice(0,10); to = sunday.toISOString().slice(0,10);
+    } else {
+      const y = calDate.getFullYear(); const m = calDate.getMonth() + 1;
+      from = `${y}-${String(m).padStart(2,'0')}-01`;
+      to = `${y}-${String(m).padStart(2,'0')}-${new Date(y,m,0).getDate()}`;
+    }
+    loadTasks(from, to);
+  }, [calView, calDate, todayStr, yesterdayStr, tomorrowStr, loadTasks]);
 
-  function toggleShowHabits(v) { setShowHabits(v); localStorage.setItem(LS_SHOW_HABITS, v); }
-  function toggleColorPriority(v) { setColorPriority(v); localStorage.setItem(LS_COLOR_PRIORITY, v); }
+  useEffect(() => {
+    if (showHabits) {
+      habitService.getHabits().then(setAllHabits).catch(() => {});
+    }
+  }, [showHabits]);
+
+  function persist(key, val) { localStorage.setItem(key, val); }
+  function setView(v) { setCalView(v); persist(LS_VIEW, v); }
+  function toggleShowHabits(v) { setShowHabits(v); persist(LS_SHOW_HABITS, v); }
+  function toggleShowCompleted(v) { setShowCompleted(v); persist(LS_SHOW_COMPLETED, v); }
+  function toggleColorPriority(v) { setColorPriority(v); persist(LS_COLOR_PRIORITY, v); }
 
   if (loading) return <p className="text-gray-400 dark:text-neutral-500 text-sm py-8 text-center">Cargando...</p>;
   if (!data) return <p className="text-gray-400 dark:text-neutral-500 text-sm py-8 text-center">Error al cargar el dashboard.</p>;
@@ -81,9 +104,10 @@ export default function Dashboard() {
       const ns = task.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
       await taskService.updateTask(task.id, { status: ns });
       reloadDashboard();
-    } catch {
-      addToast('Error al actualizar la tarea', 'error');
-    }
+      const from = calView === 'month' ? `${calDate.getFullYear()}-${String(calDate.getMonth()+1).padStart(2,'0')}-01` : yesterdayStr;
+      const to = calView === 'month' ? `${calDate.getFullYear()}-${String(calDate.getMonth()+1).padStart(2,'0')}-31` : tomorrowStr;
+      loadTasks(from, to);
+    } catch { addToast('Error al actualizar la tarea', 'error'); }
   }
 
   async function handleToggleHabit(habit) {
@@ -91,13 +115,12 @@ export default function Dashboard() {
       await habitService.toggleHabit(habit.id);
       setPendingHabits(prev => prev.filter(h => h.id !== habit.id));
       reloadDashboard();
-    } catch {
-      addToast('Error al completar el hábito', 'error');
-    }
+      if (showHabits) habitService.getHabits().then(setAllHabits).catch(() => {});
+    } catch { addToast('Error al completar el hábito', 'error'); }
   }
 
-  function navMonth(dir) { const d = new Date(calDate); d.setMonth(d.getMonth() + dir); setCalDate(d); }
   function handleDayClick(dateStr, tasks) { setDayModal({ date: dateStr, tasks: tasks || [] }); }
+  function navMonth(dir) { const d = new Date(calDate); d.setMonth(d.getMonth() + dir); setCalDate(d); }
 
   const hasContent = data.tasksToday?.length || pendingHabits.length || data.activeGoals?.length;
 
@@ -123,8 +146,15 @@ export default function Dashboard() {
         </div>
       )}
 
+      {todayTasks.length === 0 && pendingHabits.length === 0 && data.activeGoals?.length > 0 && (
+        <div className="flex items-center gap-2.5 px-4 py-3 mb-6 bg-green-50 dark:bg-green-950 border border-green-100 dark:border-green-900 rounded-md text-sm text-green-700 dark:text-green-300">
+          <CheckCircle size={16} className="flex-shrink-0" />
+          <span className="flex-1">¡Todo al día! Sin tareas ni hábitos pendientes.</span>
+        </div>
+      )}
+
       {todayTasks.length > 0 && (
-        <section className="mb-6">
+        <section className={`${pendingHabits.length === 0 ? 'mb-6' : 'mb-3'}`}>
           <h2 className="section-title mb-3">Tareas de hoy ({todayTasks.length})</h2>
           <div className="card divide-y divide-gray-50 dark:divide-neutral-700">
             {todayTasks.map(t => (
@@ -150,15 +180,16 @@ export default function Dashboard() {
           <h2 className="section-title mb-3">Hábitos pendientes ({pendingHabits.length})</h2>
           <div className="flex flex-wrap gap-2">
             {pendingHabits.map(h => (
-              <button
-                key={h.id}
-                onClick={() => handleToggleHabit(h)}
-                className="card px-3 py-2 flex items-center gap-2 text-sm hover:border-primary-300 dark:hover:border-primary-600 hover:bg-primary-50/30 dark:hover:bg-primary-500/5 transition-all group"
-              >
-                <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-neutral-600 group-hover:border-primary-400 flex-shrink-0 transition-colors" />
+              <div key={h.id} className="card px-3 py-2 flex items-center gap-2 text-sm">
+                <button onClick={e => { e.stopPropagation(); handleToggleHabit(h); }} className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-neutral-600 hover:border-primary-400 flex-shrink-0 transition-colors" />
                 <Flame size={14} className="text-orange-400 dark:text-orange-500" />
-                <span className="text-gray-700 dark:text-neutral-200">{h.name}</span>
-              </button>
+                <button
+                  onClick={() => handleToggleHabit(h)}
+                  className="text-gray-700 dark:text-neutral-200 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                >
+                  {h.name}
+                </button>
+              </div>
             ))}
           </div>
         </section>
@@ -167,37 +198,45 @@ export default function Dashboard() {
       <section className="mb-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="section-title">Calendario</h2>
-          <div className="flex items-center gap-3">
-            <label className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-neutral-400 cursor-pointer select-none">
+          <div className="flex items-center gap-2">
+            <div className="flex bg-gray-100 dark:bg-neutral-800 rounded-md p-0.5 gap-0.5">
+              {['Día','3 días','Semana','Mes'].map(label => {
+                const key = label === 'Día' ? 'day' : label === '3 días' ? '3day' : label === 'Semana' ? 'week' : 'month';
+                const active = calView === key;
+                return (
+                  <button key={key} onClick={() => setView(key)}
+                    className={`px-2.5 py-1 text-xs rounded font-medium transition-colors ${active ? 'bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100 shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-200'}`}>
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <label className="flex items-center gap-1 text-xs text-gray-500 dark:text-neutral-400 cursor-pointer select-none">
               <input type="checkbox" checked={showHabits} onChange={e => toggleShowHabits(e.target.checked)} className="w-3 h-3 rounded accent-primary-600" />
               <Eye size={12} className={showHabits ? 'text-primary-600 dark:text-primary-400' : ''} />
-              Hábitos
             </label>
-            <label className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-neutral-400 cursor-pointer select-none">
+            <label className="flex items-center gap-1 text-xs text-gray-500 dark:text-neutral-400 cursor-pointer select-none">
+              <input type="checkbox" checked={showCompleted} onChange={e => toggleShowCompleted(e.target.checked)} className="w-3 h-3 rounded accent-primary-600" />
+              <Check size={12} className={showCompleted ? 'text-primary-600 dark:text-primary-400' : ''} />
+            </label>
+            <label className="flex items-center gap-1 text-xs text-gray-500 dark:text-neutral-400 cursor-pointer select-none">
               <input type="checkbox" checked={colorPriority} onChange={e => toggleColorPriority(e.target.checked)} className="w-3 h-3 rounded accent-primary-600" />
               <Palette size={12} className={colorPriority ? 'text-primary-600 dark:text-primary-400' : ''} />
-              Prioridad
             </label>
-            <div className="flex bg-gray-100 dark:bg-neutral-800 rounded-md p-0.5 gap-0.5">
-              <button onClick={() => setView('week')} className={`px-2.5 py-1 text-xs rounded font-medium transition-colors ${view === 'week' ? 'bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100 shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-200'}`}>Semana</button>
-              <button onClick={() => setView('month')} className={`px-2.5 py-1 text-xs rounded font-medium transition-colors ${view === 'month' ? 'bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100 shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-200'}`}>Mes</button>
-            </div>
           </div>
         </div>
-        {view === 'week' ? <WeekView data={data} todayStr={todayStr} onDayClick={handleDayClick} colorPriority={colorPriority} /> : <MonthView date={calDate} monthTasks={monthTasks} todayStr={todayStr} onPrev={() => navMonth(-1)} onNext={() => navMonth(1)} onDayClick={handleDayClick} colorPriority={colorPriority} />}
+
+        {calView === 'month' ? (
+          <MonthView date={calDate} allTasks={allTasks} todayStr={todayStr} onPrev={() => navMonth(-1)} onNext={() => navMonth(1)} onDayClick={handleDayClick} colorPriority={colorPriority} showCompleted={showCompleted} showHabits={showHabits} allHabits={allHabits} />
+        ) : (
+          <MultiDayView calView={calView} allTasks={allTasks} todayStr={todayStr} yesterdayStr={yesterdayStr} tomorrowStr={tomorrowStr} onDayClick={handleDayClick} colorPriority={colorPriority} showCompleted={showCompleted} showHabits={showHabits} allHabits={allHabits} />
+        )}
       </section>
 
       {dayModal && (
-        <DayModal
-          date={dayModal.date}
-          tasks={dayModal.tasks}
-          onClose={() => setDayModal(null)}
-          onToggleTask={handleToggleTask}
-          onQuickTask={() => setQuickTask({ dueDate: dayModal.date })}
-          pendingHabits={pendingHabits}
-          onToggleHabit={handleToggleHabit}
-          showHabits={showHabits}
-        />
+        <DayModal date={dayModal.date} tasks={dayModal.tasks} onClose={() => setDayModal(null)}
+          onToggleTask={handleToggleTask} onQuickTask={() => setQuickTask({ dueDate: dayModal.date })}
+          pendingHabits={pendingHabits} onToggleHabit={handleToggleHabit} showHabits={showHabits} />
       )}
 
       {data.activeGoals?.length > 0 && (
@@ -205,16 +244,23 @@ export default function Dashboard() {
           <h2 className="section-title mb-3">Objetivos activos</h2>
           <div className="space-y-1">
             {data.activeGoals.map(goal => (
-              <Link key={goal.id} to="/goals" className="card card-hover flex items-center gap-3 px-4 py-3 transition-colors">
-                <Target size={16} className="text-primary-600 dark:text-primary-400 flex-shrink-0" />
+              <Link key={goal.id} to="/goals" className={`card card-hover flex items-center gap-3 px-4 py-3 transition-colors ${goal.progress >= 100 ? 'border-green-200 dark:border-green-800 bg-green-50/30 dark:bg-green-950/20' : ''}`}>
+                <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${goal.progress >= 100 ? 'bg-green-100 text-green-600 dark:bg-green-500/15 dark:text-green-400' : 'text-primary-600 dark:text-primary-400'}`}>
+                  {goal.progress >= 100 ? <CheckCircle size={16} /> : <Target size={16} />}
+                </div>
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium text-gray-900 dark:text-neutral-100 truncate">{goal.title}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-gray-900 dark:text-neutral-100 truncate">{goal.title}</span>
+                    {goal.progress >= 100 && <span className="badge text-[0.625rem] bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400">Completado</span>}
+                  </div>
                   {goal.description && <p className="text-xs text-gray-400 dark:text-neutral-500 truncate mt-0.5">{goal.description}</p>}
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  <span className="text-xs text-gray-400 dark:text-neutral-500 tabular-nums whitespace-nowrap">{goal.completedTasks || 0}/{goal.totalTasks || 0}</span>
-                  <div className="w-16 bg-gray-100 dark:bg-neutral-800 rounded-full h-1.5"><div className="bg-primary-500 dark:bg-primary-400 h-1.5 rounded-full transition-all" style={{ width: `${goal.progress}%` }} /></div>
-                  <span className="text-xs text-gray-400 dark:text-neutral-500 tabular-nums w-8 text-right">{goal.progress}%</span>
+                  <span className={`text-xs tabular-nums whitespace-nowrap ${goal.progress >= 100 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-gray-400 dark:text-neutral-500'}`}>{goal.completedTasks || 0}/{goal.totalTasks || 0}</span>
+                  <div className="w-16 bg-gray-100 dark:bg-neutral-800 rounded-full h-1.5">
+                    <div className={`h-1.5 rounded-full transition-all ${goal.progress >= 100 ? 'bg-green-500 dark:bg-green-400' : 'bg-primary-500 dark:bg-primary-400'}`} style={{ width: `${Math.min(goal.progress, 100)}%` }} />
+                  </div>
+                  <span className={`text-xs tabular-nums w-8 text-right ${goal.progress >= 100 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-gray-400 dark:text-neutral-500'}`}>{goal.progress}%</span>
                 </div>
               </Link>
             ))}
@@ -238,8 +284,7 @@ export default function Dashboard() {
           onSave={async (t) => {
             try { await taskService.createTask(t); addToast('Tarea creada', 'success'); setQuickTask(null); reloadDashboard(); }
             catch (err) { addToast(err.response?.data?.error || 'Error al crear la tarea', 'error'); }
-          }}
-          onClose={() => setQuickTask(null)} />
+          }} onClose={() => setQuickTask(null)} />
       )}
     </div>
   );
@@ -257,11 +302,7 @@ function SummaryCard({ title, count, doneLabel, link, icon: Icon, color }) {
         {isDone ? <CheckCircle size={16} strokeWidth={2.5} /> : <Icon size={16} strokeWidth={2} />}
       </div>
       <div>
-        {isDone ? (
-          <p className="text-xs font-medium text-green-700 dark:text-green-400">{doneLabel}</p>
-        ) : (
-          <p className="text-xl font-semibold text-gray-900 dark:text-neutral-100 leading-none">{count}</p>
-        )}
+        {isDone ? <p className="text-xs font-medium text-green-700 dark:text-green-400">{doneLabel}</p> : <p className="text-xl font-semibold text-gray-900 dark:text-neutral-100 leading-none">{count}</p>}
         <p className="text-xs text-gray-400 dark:text-neutral-500 mt-0.5">{title}</p>
       </div>
       <ChevronRight size={14} className="text-gray-300 dark:text-neutral-600 ml-auto flex-shrink-0" />
@@ -276,30 +317,68 @@ function priorityColor(p) {
 }
 
 function taskChipColor(t, colorPriority) {
-  if (t.status === 'COMPLETED') return 'bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-300 line-through';
+  if (t.status === 'COMPLETED') return colorPriority ? 'bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-300 line-through' : 'bg-gray-50 dark:bg-neutral-800 text-gray-400 dark:text-neutral-600 line-through';
   if (colorPriority) return priorityColor(t.priority);
   return 'bg-primary-50 dark:bg-primary-500/15 text-primary-700 dark:text-primary-300';
 }
 
-function WeekView({ data, todayStr, onDayClick, colorPriority }) {
-  if (!data.week) return null;
+function MultiDayView({ calView, allTasks, todayStr, yesterdayStr, tomorrowStr, onDayClick, colorPriority, showCompleted, showHabits, allHabits }) {
+  let days = [];
+  if (calView === 'day') {
+    const d = new Date(todayStr + 'T00:00:00');
+    days = [{ date: todayStr, label: dayNames[d.getDay()], dayNum: d.getDate(), isToday: true }];
+  } else if (calView === '3day') {
+    const yesterday = new Date(yesterdayStr + 'T00:00:00');
+    const today = new Date(todayStr + 'T00:00:00');
+    const tomorrow = new Date(tomorrowStr + 'T00:00:00');
+    days = [
+      { date: yesterdayStr, label: dayNames[yesterday.getDay()], dayNum: yesterday.getDate(), isToday: false },
+      { date: todayStr, label: dayNames[today.getDay()], dayNum: today.getDate(), isToday: true },
+      { date: tomorrowStr, label: dayNames[tomorrow.getDay()], dayNum: tomorrow.getDate(), isToday: false },
+    ];
+  } else {
+    const dow = new Date(todayStr).getDay();
+    const monday = new Date(todayStr); monday.setDate(parseInt(todayStr.slice(8)) - (dow === 0 ? 6 : dow - 1));
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday); d.setDate(monday.getDate() + i);
+      const ds = d.toISOString().slice(0, 10);
+      days.push({ date: ds, label: weekDays[i], dayNum: d.getDate(), isToday: ds === todayStr });
+    }
+  }
+
+  const colClass = calView === 'day' ? '' : calView === '3day' ? 'grid-cols-3' : 'grid-cols-7';
+
   return (
-    <div className="grid grid-cols-7 gap-1.5">
-      {data.week.map(day => {
-        const date = new Date(day.date + 'T00:00:00');
-        const isToday = day.date === todayStr;
+    <div className={`grid ${colClass} gap-1.5`}>
+      {days.map(day => {
+        let dayTasks = allTasks[day.date] || [];
+        if (!showCompleted) dayTasks = dayTasks.filter(t => t.status !== 'COMPLETED');
+        const habitsToday = showHabits ? (allHabits || []) : [];
         return (
-          <button key={day.date} onClick={() => onDayClick(day.date, day.tasks)}
-            className={`rounded-md p-2 min-h-[80px] text-left transition-all ${isToday ? 'ring-1 ring-primary-300 dark:ring-primary-500 bg-white dark:bg-neutral-900' : 'bg-white dark:bg-neutral-900 card'}`}>
+          <button key={day.date} onClick={() => onDayClick(day.date, dayTasks)}
+            className={`rounded-md p-2 text-left transition-all ${calView === 'day' ? 'min-h-[200px]' : calView === '3day' ? 'min-h-[160px]' : 'min-h-[80px]'} ${day.isToday ? 'ring-1 ring-primary-300 dark:ring-primary-500 bg-white dark:bg-neutral-900' : 'bg-white dark:bg-neutral-900 card'}`}>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[0.625rem] text-gray-400 dark:text-neutral-500 font-medium">{weekDays[date.getDay() === 0 ? 6 : date.getDay() - 1]}</span>
-              <span className={`text-xs font-medium ${isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-neutral-400'}`}>{date.getDate()}</span>
+              <span className="text-[0.625rem] text-gray-400 dark:text-neutral-500 font-medium">
+                {calView === '3day' ? (day.date === yesterdayStr ? 'Ayer' : day.date === tomorrowStr ? 'Mañana' : 'Hoy') : day.label}
+              </span>
+              <span className={`text-xs font-medium ${day.isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-neutral-400'}`}>
+                {day.date === todayStr ? day.dayNum : day.dayNum}
+                {calView !== 'day' && ` ${months[parseInt(day.date.slice(5,7))-1].slice(0,3)}`}
+              </span>
             </div>
             <div className="space-y-0.5">
-              {day.tasks.slice(0, 3).map(t => (
+              {dayTasks.slice(0, calView === 'day' ? 8 : calView === '3day' ? 5 : 3).map(t => (
                 <div key={t.id} className={`text-[0.625rem] px-1 py-0.5 rounded truncate leading-tight ${taskChipColor(t, colorPriority)}`}>{t.title}</div>
               ))}
-              {day.tasks.length > 3 && <p className="text-[0.625rem] text-gray-400 dark:text-neutral-500">+{day.tasks.length - 3} más</p>}
+              {dayTasks.length > (calView === 'day' ? 8 : calView === '3day' ? 5 : 3) && <p className="text-[0.625rem] text-gray-400 dark:text-neutral-500">+{dayTasks.length - (calView === 'day' ? 8 : calView === '3day' ? 5 : 3)} más</p>}
+              {showHabits && habitsToday.filter(h => h.completedToday).length > 0 && (
+                <div className="flex flex-wrap gap-0.5 mt-1">
+                  {habitsToday.filter(h => h.completedToday).slice(0, 2).map(h => (
+                    <div key={h.id} className="text-[0.5rem] px-1 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300 truncate">{h.name}</div>
+                  ))}
+                  {habitsToday.filter(h => h.completedToday).length > 2 && <span className="text-[0.5rem] text-gray-400">+{habitsToday.filter(h => h.completedToday).length - 2}</span>}
+                </div>
+              )}
             </div>
           </button>
         );
@@ -308,9 +387,8 @@ function WeekView({ data, todayStr, onDayClick, colorPriority }) {
   );
 }
 
-function MonthView({ date, monthTasks, todayStr, onPrev, onNext, onDayClick, colorPriority }) {
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
+function MonthView({ date, allTasks, todayStr, onPrev, onNext, onDayClick, colorPriority, showCompleted, showHabits, allHabits }) {
+  const year = date.getFullYear(); const month = date.getMonth() + 1;
   const daysInMonth = new Date(year, month, 0).getDate();
   const firstDay = new Date(year, month - 1, 1).getDay();
   const startOffset = firstDay === 0 ? 6 : firstDay - 1;
@@ -325,19 +403,16 @@ function MonthView({ date, monthTasks, todayStr, onPrev, onNext, onDayClick, col
         {weekDays.map(d => <div key={d} className="text-[0.625rem] text-gray-400 dark:text-neutral-500 font-medium text-center py-1">{d}</div>)}
         {Array.from({ length: startOffset }).map((_, i) => <div key={`e${i}`} />)}
         {Array.from({ length: daysInMonth }, (_, i) => {
-          const day = i + 1;
-          const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-          const isToday = dateStr === todayStr;
-          const dayTasks = monthTasks[dateStr] || [];
+          const day = i + 1; const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`; const isToday = dateStr === todayStr;
+          let dayTasks = allTasks[dateStr] || [];
+          if (!showCompleted) dayTasks = dayTasks.filter(t => t.status !== 'COMPLETED');
           return (
             <button key={day} onClick={() => onDayClick(dateStr, dayTasks)}
               className={`p-1.5 rounded-md text-left min-h-[56px] transition-all hover:bg-gray-50 dark:hover:bg-neutral-800 ${isToday ? 'ring-1 ring-primary-300 dark:ring-primary-500 bg-primary-50/30 dark:bg-primary-500/10' : ''}`}>
               <span className={`text-xs font-medium ${isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-600 dark:text-neutral-400'}`}>{day}</span>
               {dayTasks.length > 0 && (
                 <div className="mt-0.5 space-y-0.5">
-                  {dayTasks.slice(0, 2).map(t => (
-                    <div key={t.id} className={`text-[0.5rem] px-0.5 py-0.5 rounded truncate leading-tight ${taskChipColor(t, colorPriority)}`}>{t.title}</div>
-                  ))}
+                  {dayTasks.slice(0, 2).map(t => <div key={t.id} className={`text-[0.5rem] px-0.5 py-0.5 rounded truncate leading-tight ${taskChipColor(t, colorPriority)}`}>{t.title}</div>)}
                   {dayTasks.length > 2 && <p className="text-[0.5rem] text-gray-400 dark:text-neutral-500">+{dayTasks.length - 2}</p>}
                 </div>
               )}
@@ -354,6 +429,7 @@ function DayModal({ date, tasks, onClose, onToggleTask, onQuickTask, pendingHabi
   const d = new Date(date + 'T00:00:00');
   const dayName = dayNames[d.getDay()];
   const displayDate = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+  const isToday = date === new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
     function handleKeyDown(e) { if (e.key === 'Escape') onClose(); }
@@ -362,17 +438,10 @@ function DayModal({ date, tasks, onClose, onToggleTask, onQuickTask, pendingHabi
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  const isToday = date === new Date().toISOString().slice(0, 10);
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in" onClick={onClose}>
       <div className="fixed inset-0 bg-black/30 dark:bg-black/60 backdrop-blur-sm" />
-      <div
-        ref={modalRef}
-        tabIndex={-1}
-        className="relative w-full max-w-md mx-4 bg-white dark:bg-neutral-900 rounded-lg shadow-modal animate-scale-in max-h-[85vh] overflow-y-auto custom-scrollbar"
-        onClick={e => e.stopPropagation()}
-      >
+      <div ref={modalRef} tabIndex={-1} className="relative w-full max-w-md mx-4 bg-white dark:bg-neutral-900 rounded-lg shadow-modal animate-scale-in max-h-[85vh] overflow-y-auto custom-scrollbar" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 h-12 border-b border-gray-100 dark:border-neutral-700">
           <h2 className="text-sm font-semibold text-gray-900 dark:text-neutral-100">{dayName}, {displayDate}</h2>
           <div className="flex items-center gap-1">
@@ -380,22 +449,16 @@ function DayModal({ date, tasks, onClose, onToggleTask, onQuickTask, pendingHabi
             <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"><X size={16} /></button>
           </div>
         </div>
-
         <div className="p-5 space-y-4">
-          {tasks.length === 0 && (!isToday || pendingHabits.length === 0) && (
+          {tasks.length === 0 && (!isToday || (pendingHabits.length === 0)) && (
             <p className="text-sm text-gray-400 dark:text-neutral-500 text-center py-4">Sin tareas para este día</p>
           )}
-
           {tasks.length > 0 && (
             <div>
               <h3 className="text-xs font-semibold text-gray-400 dark:text-neutral-500 uppercase tracking-wider mb-2">Tareas ({tasks.length})</h3>
               <div className="space-y-1">
                 {tasks.map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => onToggleTask(t)}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-50 dark:hover:bg-neutral-800 text-left transition-colors group"
-                  >
+                  <button key={t.id} onClick={() => onToggleTask(t)} className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-50 dark:hover:bg-neutral-800 text-left transition-colors group">
                     <div className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 transition-all ${t.status === 'COMPLETED' ? 'bg-green-500 border-green-500' : 'border-gray-300 dark:border-neutral-600 group-hover:border-primary-400'}`}>
                       {t.status === 'COMPLETED' && <Check size={10} className="text-white m-auto" strokeWidth={3} />}
                     </div>
@@ -406,17 +469,12 @@ function DayModal({ date, tasks, onClose, onToggleTask, onQuickTask, pendingHabi
               </div>
             </div>
           )}
-
           {isToday && pendingHabits.length > 0 && (
             <div>
               <h3 className="text-xs font-semibold text-gray-400 dark:text-neutral-500 uppercase tracking-wider mb-2">Hábitos pendientes ({pendingHabits.length})</h3>
               <div className="flex flex-wrap gap-2">
                 {pendingHabits.map(h => (
-                  <button
-                    key={h.id}
-                    onClick={() => onToggleHabit(h)}
-                    className="card px-3 py-2 flex items-center gap-2 text-sm hover:border-primary-300 dark:hover:border-primary-600 hover:bg-primary-50/30 dark:hover:bg-primary-500/5 transition-all group"
-                  >
+                  <button key={h.id} onClick={() => onToggleHabit(h)} className="card px-3 py-2 flex items-center gap-2 text-sm hover:border-primary-300 dark:hover:border-primary-600 hover:bg-primary-50/30 dark:hover:bg-primary-500/5 transition-all group">
                     <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-neutral-600 group-hover:border-primary-400 flex-shrink-0 transition-colors" />
                     <Flame size={14} className="text-orange-400 dark:text-orange-500" />
                     <span className="text-gray-700 dark:text-neutral-200">{h.name}</span>

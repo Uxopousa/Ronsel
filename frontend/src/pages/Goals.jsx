@@ -3,7 +3,7 @@ import * as goalService from '../services/goals';
 import * as taskService from '../services/tasks';
 import GoalModal from '../components/shared/GoalModal';
 import { useToast } from '../components/ui/Toast';
-import { Plus, Target, ChevronDown, ChevronUp, Check, Plus as PlusIcon } from 'lucide-react';
+import { Plus, Target, ChevronDown, ChevronUp, Check, Plus as PlusIcon, CheckCircle } from 'lucide-react';
 
 export default function Goals() {
   const [goals, setGoals] = useState([]);
@@ -100,18 +100,25 @@ export default function Goals() {
           const tasks = goalTasks[goal.id];
           return (
             <div key={goal.id} className="card overflow-hidden">
-              <button onClick={() => toggleExpand(goal)} className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors">
-                <Target size={16} className="text-primary-600 dark:text-primary-400 flex-shrink-0" />
+              <button onClick={() => toggleExpand(goal)} className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors ${prog.progress >= 100 ? 'border-green-200 dark:border-green-800' : ''}`}>
+                {prog.progress >= 100 ? (
+                  <CheckCircle size={16} className="text-green-600 dark:text-green-400 flex-shrink-0" />
+                ) : (
+                  <Target size={16} className="text-primary-600 dark:text-primary-400 flex-shrink-0" />
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-gray-900 dark:text-neutral-100 truncate">{goal.title}</span>
-                    {goal.status !== 'ACTIVE' && <span className={`badge text-[0.625rem] ${goal.status === 'COMPLETED' ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300' : 'bg-gray-50 dark:bg-neutral-800 text-gray-500 dark:text-neutral-400'}`}>{goal.status === 'COMPLETED' ? 'Completado' : 'Cancelado'}</span>}
+                    {prog.progress >= 100 && <span className="badge text-[0.625rem] bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400">Completado</span>}
+                    {goal.status !== 'ACTIVE' && goal.status !== 'COMPLETED' && <span className="badge text-[0.625rem] bg-gray-50 dark:bg-neutral-800 text-gray-500 dark:text-neutral-400">Cancelado</span>}
                   </div>
                   {goal.description && <p className="text-xs text-gray-400 dark:text-neutral-500 truncate mt-0.5">{goal.description}</p>}
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400 dark:text-neutral-500 tabular-nums">{prog.progress}%</span>
-                  <div className="w-16 bg-gray-100 dark:bg-neutral-800 rounded-full h-1.5"><div className="bg-primary-500 dark:bg-primary-400 h-1.5 rounded-full transition-all" style={{ width: `${prog.progress}%` }} /></div>
+                  <span className={`text-xs tabular-nums ${prog.progress >= 100 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-gray-400 dark:text-neutral-500'}`}>{prog.progress}%</span>
+                  <div className="w-16 bg-gray-100 dark:bg-neutral-800 rounded-full h-1.5">
+                    <div className={`h-1.5 rounded-full transition-all ${prog.progress >= 100 ? 'bg-green-500 dark:bg-green-400' : 'bg-primary-500 dark:bg-primary-400'}`} style={{ width: `${Math.min(prog.progress, 100)}%` }} />
+                  </div>
                   {isExpanded ? <ChevronUp size={14} className="text-gray-400 dark:text-neutral-500" /> : <ChevronDown size={14} className="text-gray-400 dark:text-neutral-500" />}
                 </div>
               </button>
