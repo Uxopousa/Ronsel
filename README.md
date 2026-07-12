@@ -2,6 +2,8 @@
 
 > A personal productivity app for daily planning — tasks, habits, goals, and a clean calendar. Built with React, Express, and PostgreSQL.
 
+[![Demo](https://img.shields.io/badge/demo-live-4f46e5?style=flat)](https://ronsel-ebon.vercel.app)
+
 <br>
 
 <p align="center">
@@ -323,24 +325,13 @@ Full interactive API documentation available at `http://localhost:4000/api-docs`
 
 ## Documentation
 
-All product and architecture documentation is in `/docs` (in Spanish):
+Supplementary technical docs in `/docs` (Spanish):
 
 | Document | Content |
 |----------|---------|
-| [Visión](./docs/01-vision.md) | Project vision and value proposition |
-| [Objetivos](./docs/02-objetivos.md) | Product objectives |
-| [Alcance](./docs/03-alcance.md) | Scope definition |
-| [Funcionalidades](./docs/04-funcionalidades.md) | Feature catalog |
-| [MVP](./docs/05-mvp.md) | MVP definition |
-| [Backlog](./docs/06-backlog.md) | Product backlog |
-| [Requisitos Funcionales](./docs/07-requisitos-funcionales.md) | Functional requirements |
-| [Requisitos No Funcionales](./docs/08-requisitos-no-funcionales.md) | Non-functional requirements |
-| [Casos de Uso](./docs/09-casos-de-uso.md) | Use cases |
-| [Arquitectura](./docs/10-arquitectura.md) | Proposed architecture |
-| [Modelo de Datos](./docs/11-modelo-de-datos.md) | Data model (ER diagram) |
-| [Roadmap](./docs/12-roadmap.md) | Development roadmap |
-| [Criterios de Aceptación](./docs/13-criterios-de-aceptacion.md) | Acceptance criteria |
-| [Decisiones Técnicas](./docs/14-decisiones-tecnicas.md) | Technical decisions (ADRs) |
+| [Arquitectura](./docs/10-arquitectura.md) | Architecture decisions and diagrams |
+| [Modelo de Datos](./docs/11-modelo-de-datos.md) | Prisma schema and entity relationships |
+| [Roadmap](./docs/12-roadmap.md) | Completed and planned features |
 
 ## Roadmap
 
