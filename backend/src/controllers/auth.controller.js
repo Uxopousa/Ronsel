@@ -14,3 +14,8 @@ export async function me(req, res) {
   const user = await authService.getProfile(req.userId);
   res.json(user);
 }
+
+export async function demo(req, res) {
+  const result = await authService.demoLogin();
+  res.json(result);
+}

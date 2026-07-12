@@ -45,3 +45,16 @@ export async function getProfile(userId) {
   if (!user) throw new ApiError(404, 'Usuario no encontrado');
   return user;
 }
+
+export async function demoLogin() {
+  const email = 'demo@ronsel.app';
+  let user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    const hashed = await hashPassword('password123');
+    user = await prisma.user.create({
+      data: { email, password: hashed, name: 'Demo' },
+    });
+  }
+  const token = signToken({ id: user.id });
+  return { token, user: { id: user.id, email: user.email, name: user.name } };
+}

@@ -2,7 +2,7 @@
 
 > A personal productivity app for daily planning — tasks, habits, goals, and a clean calendar. Built with React, Express, and PostgreSQL.
 
-[![Demo](https://img.shields.io/badge/demo-live-4f46e5?style=flat)](https://ronsel-ebon.vercel.app)
+[![Demo](https://img.shields.io/badge/demo-live-4f46e5?style=flat)](https://ronsel-ebon.vercel.app/demo)
 
 <br>
 
@@ -53,8 +53,6 @@ The name comes from the Galician word for *wake* (the trail left by a ship), ref
 - [x] **Day detail modal** — Click any calendar day to see tasks and habits in a focused modal with backdrop blur.
 
 ## Screenshots
-
-> Replace these placeholders with actual screenshots.
 
 | Screen | Placeholder |
 |--------|-------------|
@@ -119,7 +117,7 @@ pages/  →  components/  →  services/  →  Axios  →  /api
 
 ```bash
 # 1. Clone and start PostgreSQL
-git clone <repo-url> ronsel && cd ronsel
+git clone https://github.com/Uxopousa/Ronsel.git ronsel && cd ronsel
 docker compose up -d
 
 # 2. Set up backend
@@ -198,7 +196,7 @@ npm install
 npm run dev               # starts Vite dev server at :5173
 ```
 
-The Vite dev server proxies `/api` requests to `http://localhost:4000`. No CORS issues in development.
+In development, API calls go through Vite's proxy to `http://localhost:4000`. No CORS issues.
 
 ## Available Scripts
 
@@ -260,7 +258,7 @@ ronsel/
 │       ├── App.jsx                 # Route definitions
 │       ├── index.css               # Design system + Tailwind layers
 │       └── main.jsx                # Entry point
-├── docs/                           # Product documentation (14 docs, Spanish)
+├── docs/                           # Technical documentation (3 docs, Spanish)
 └── README.md
 ```
 
@@ -273,6 +271,7 @@ ronsel/
 | POST | `/api/auth/register` | Register a new user |
 | POST | `/api/auth/login` | Login, returns JWT |
 | GET | `/api/auth/me` | Get current user profile |
+| GET | `/api/auth/demo` | Auto-login demo account |
 
 ### Tasks
 
