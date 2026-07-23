@@ -26,7 +26,6 @@
 - [API](#api)
 - [Documentation](#documentation)
 - [Roadmap](#roadmap)
-- [License](#license)
 
 ## What is Ronsel
 
@@ -349,6 +348,4 @@ Supplementary technical docs in `/docs` (Spanish):
 - [ ] PWA support (offline mode)
 - [ ] End-to-end tests
 
-## License
 
-MIT © Uxío Pousa
