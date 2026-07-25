@@ -14,19 +14,26 @@ import Goals from './pages/Goals';
 import api from './services/api';
 
 function DemoRedirect() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    if (loading) return;
     if (user) return;
+    localStorage.removeItem('token');
     api.get('/auth/demo')
       .then(res => {
         localStorage.setItem('token', res.data.token);
         window.location.href = '/';
       })
       .catch(() => setError(true));
-  }, [user]);
+  }, [user, loading]);
 
+  if (loading) return (
+    <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-neutral-950">
+      <p className="text-gray-400 dark:text-neutral-500 text-sm">Entrando en la demo...</p>
+    </div>
+  );
   if (user) return <Navigate to="/" />;
   if (error) return <Navigate to="/login" />;
   return (

@@ -9,10 +9,7 @@ import * as taskService from '../services/tasks';
 import * as habitService from '../services/habits';
 import TaskModal from '../components/shared/TaskModal';
 import { useToast } from '../components/ui/Toast';
-
-const weekDays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+import { WEEK_DAYS, DAY_NAMES, MONTHS } from '../constants';
 
 const LS_VIEW = 'dash_calView';
 const LS_SHOW_HABITS = 'dash_showHabits';
@@ -325,9 +322,9 @@ function MultiDayView({ calView, allTasks, todayStr, yesterdayStr, tomorrowStr, 
     const td = new Date(todayStr + 'T00:00:00');
     const tmd = new Date(tomorrowStr + 'T00:00:00');
     days = [
-      { date: yesterdayStr, label: dayNames[yd.getDay()], dayNum: yd.getDate(), month: months[yd.getMonth()].slice(0,3), isToday: false, isAyer: true },
-      { date: todayStr, label: dayNames[td.getDay()], dayNum: td.getDate(), month: months[td.getMonth()].slice(0,3), isToday: true },
-      { date: tomorrowStr, label: dayNames[tmd.getDay()], dayNum: tmd.getDate(), month: months[tmd.getMonth()].slice(0,3), isToday: false, isManana: true },
+      { date: yesterdayStr, label: DAY_NAMES[yd.getDay()], dayNum: yd.getDate(), month: MONTHS[yd.getMonth()].slice(0,3), isToday: false, isAyer: true },
+      { date: todayStr, label: DAY_NAMES[td.getDay()], dayNum: td.getDate(), month: MONTHS[td.getMonth()].slice(0,3), isToday: true },
+      { date: tomorrowStr, label: DAY_NAMES[tmd.getDay()], dayNum: tmd.getDate(), month: MONTHS[tmd.getMonth()].slice(0,3), isToday: false, isManana: true },
     ];
   } else {
     const dow = new Date(todayStr).getDay();
@@ -335,7 +332,7 @@ function MultiDayView({ calView, allTasks, todayStr, yesterdayStr, tomorrowStr, 
     for (let i = 0; i < 7; i++) {
       const d = new Date(monday); d.setDate(monday.getDate() + i);
       const ds = d.toISOString().slice(0, 10);
-      days.push({ date: ds, label: weekDays[i], dayNum: d.getDate(), month: months[d.getMonth()].slice(0,3), isToday: ds === todayStr });
+      days.push({ date: ds, label: WEEK_DAYS[i], dayNum: d.getDate(), month: MONTHS[d.getMonth()].slice(0,3), isToday: ds === todayStr });
     }
   }
 
@@ -411,11 +408,11 @@ function MonthView({ date, allTasks, todayStr, onPrev, onNext, onDayClick, color
     <div className="card p-4">
       <div className="flex items-center justify-between mb-4">
         <button onClick={onPrev} className="btn-ghost btn-sm p-1.5"><ChevronLeft size={16} /></button>
-        <span className="text-sm font-semibold text-gray-700 dark:text-neutral-200">{months[month - 1]} {year}</span>
+        <span className="text-sm font-semibold text-gray-700 dark:text-neutral-200">{MONTHS[month - 1]} {year}</span>
         <button onClick={onNext} className="btn-ghost btn-sm p-1.5"><ChevronRight size={16} /></button>
       </div>
       <div className="grid grid-cols-7 text-center">
-        {weekDays.map(d => <div key={d} className="text-xs font-medium text-gray-400 dark:text-neutral-500 py-2">{d}</div>)}
+        {WEEK_DAYS.map(d => <div key={d} className="text-xs font-medium text-gray-400 dark:text-neutral-500 py-2">{d}</div>)}
         {Array.from({ length: startOffset }).map((_, i) => <div key={`e${i}`} className="py-1" />)}
         {Array.from({ length: daysInMonth }, (_, i) => {
           const day = i + 1; const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`; const isToday = dateStr === todayStr;
@@ -450,7 +447,7 @@ function MonthView({ date, allTasks, todayStr, onPrev, onNext, onDayClick, color
 function DayModal({ date, tasks, onClose, onToggleTask, onQuickTask, pendingHabits, onToggleHabit, showHabits }) {
   const modalRef = useRef(null);
   const d = new Date(date + 'T00:00:00');
-  const dayName = dayNames[d.getDay()];
+  const dayName = DAY_NAMES[d.getDay()];
   const displayDate = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
   const isToday = date === new Date().toISOString().slice(0, 10);
 

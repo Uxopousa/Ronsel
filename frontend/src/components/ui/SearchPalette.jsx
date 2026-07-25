@@ -5,28 +5,17 @@ import * as taskService from '../../services/tasks';
 import * as habitService from '../../services/habits';
 import * as goalService from '../../services/goals';
 import * as categoryService from '../../services/categories';
-
-function getModKey() {
-  return navigator.userAgent.includes('Mac') && !navigator.userAgent.includes('Mobile') ? '⌘' : 'Ctrl+';
-}
-
-function isTouchDevice() {
-  return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-}
+import { useModKey } from '../../hooks/useModKey';
+import { useTouchDevice } from '../../hooks/useTouchDevice';
 
 export default function SearchPalette({ open, onClose }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState({ tasks: [], habits: [], goals: [], categories: [] });
   const [loading, setLoading] = useState(false);
-  const [modKey, setModKey] = useState('');
-  const [touch, setTouch] = useState(false);
+  const modKey = useModKey();
+  const touch = useTouchDevice();
   const inputRef = useRef(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    setModKey(getModKey());
-    setTouch(isTouchDevice());
-  }, []);
 
   useEffect(() => {
     if (open && inputRef.current) {

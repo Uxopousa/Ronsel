@@ -4,11 +4,9 @@ import * as categoryService from '../services/categories';
 import HabitModal from '../components/shared/HabitModal';
 import { useToast } from '../components/ui/Toast';
 import {
-  Plus, Edit3, Trash2, Check, Zap, TrendingUp, ChevronDown, ChevronUp, Flame,
+  Plus, Check, Zap, TrendingUp, ChevronDown, ChevronUp, Flame,
 } from 'lucide-react';
-
-const weekDays = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+import { WEEK_DAYS_SHORT, MONTHS } from '../constants';
 
 export default function Habits() {
   const [habits, setHabits] = useState([]);
@@ -132,14 +130,22 @@ function HabitCard({ habit, expanded, onToggle, onEdit, onDelete, onExpand }) {
           <span className="text-gray-200 dark:text-neutral-700">·</span>
           <div className="flex items-center gap-1">
             {getWeekDays(weekData).map((day, i) => (
-              <div key={i} className={`w-2.5 h-2.5 rounded-sm ${day.completed ? 'bg-green-400 dark:bg-green-500' : day.future ? 'bg-gray-100 dark:bg-neutral-800' : 'bg-gray-200 dark:bg-neutral-700'}`} title={`${weekDays[i]}: ${day.completed ? '✓' : day.future ? '—' : '✗'}`} />
+              <div key={i} className={`w-2.5 h-2.5 rounded-sm ${day.completed ? 'bg-green-400 dark:bg-green-500' : day.future ? 'bg-gray-100 dark:bg-neutral-800' : 'bg-gray-200 dark:bg-neutral-700'}`} title={`${WEEK_DAYS_SHORT[i]}: ${day.completed ? '✓' : day.future ? '—' : '✗'}`} />
             ))}
           </div>
           <button onClick={e => { e.stopPropagation(); onExpand(); }} className="btn-ghost btn-sm p-1 ml-1">{expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</button>
         </div>
       </div>
 
-      {expanded && <HabitCalendarInline habitId={habit.id} />}
+      {expanded && (
+        <>
+          <HabitCalendarInline habitId={habit.id} />
+          <div className="flex gap-2 px-4 pb-4 pt-2 border-t border-gray-50 dark:border-neutral-700">
+            <button onClick={e => { e.stopPropagation(); onEdit(); }} className="btn-ghost btn-sm text-xs">Editar hábito</button>
+            <button onClick={e => { e.stopPropagation(); onDelete(); }} className="btn-ghost btn-sm text-xs hover:text-red-500 dark:hover:text-red-400">Eliminar</button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -166,12 +172,12 @@ function HabitCalendarInline({ habitId }) {
       <div className="flex items-center justify-between mb-2">
         <div className="flex gap-1">
           <button onClick={() => { if (month === 1) { setYear(y => y - 1); setMonth(12); } else setMonth(m => m - 1); }} className="btn-ghost btn-sm p-1"><ChevronDown size={12} className="rotate-90" /></button>
-          <span className="text-xs font-medium text-gray-600 dark:text-neutral-300">{months[month - 1]} {year}</span>
+          <span className="text-xs font-medium text-gray-600 dark:text-neutral-300">{MONTHS[month - 1]} {year}</span>
           <button onClick={() => { if (month === 12) { setYear(y => y + 1); setMonth(1); } else setMonth(m => m + 1); }} className="btn-ghost btn-sm p-1"><ChevronDown size={12} className="-rotate-90" /></button>
         </div>
       </div>
       <div className="grid grid-cols-7 gap-0.5">
-        {weekDays.map(d => <div key={d} className="text-[0.5rem] text-gray-400 dark:text-neutral-500 font-medium text-center py-0.5">{d}</div>)}
+        {WEEK_DAYS_SHORT.map(d => <div key={d} className="text-[0.5rem] text-gray-400 dark:text-neutral-500 font-medium text-center py-0.5">{d}</div>)}
         {Array.from({ length: startOffset }).map((_, i) => <div key={`e${i}`} />)}
         {Array.from({ length: daysInMonth }, (_, i) => {
           const day = i + 1; const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`; const isToday = dateStr === todayStr; const completed = days.days?.[day];
