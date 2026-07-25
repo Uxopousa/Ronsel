@@ -41,6 +41,9 @@ desktop.ini
 
 # Agent context (local, not committed)
 AGENTS.md
+opencode.json
+CHANGELOG.md
+.github/copilot-instructions.md
 
 AGENTIC-BOOTSTRAP.md
 .opencode/
