@@ -9,10 +9,7 @@ import {
   Plus, Settings2, Edit3, Trash2, Check, Search,
   SlidersHorizontal, ChevronLeft, ChevronRight, CalendarDays, List, X, ListTodo,
 } from 'lucide-react';
-
-const statusLabels = { PENDING: 'Pendiente', IN_PROGRESS: 'En progreso', COMPLETED: 'Completada', CANCELLED: 'Cancelada' };
-const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const weekDays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+import { STATUS_LABELS, MONTHS, WEEK_DAYS } from '../constants';
 
 export default function Tasks() {
   const [tasks, setTasks] = useState([]);
@@ -189,7 +186,7 @@ function FilterPanel({ filters, categories, goals, onChange, onClose }) {
         <button onClick={onClose} className="text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300"><X size={12} /></button>
       </div>
       <div className="space-y-2">
-        <div><label className="text-[0.625rem] text-gray-400 dark:text-neutral-500 font-medium">Estado</label><select value={filters.status} onChange={e => onChange({ ...filters, status: e.target.value })} className="select text-xs py-1.5 mt-0.5"><option value="">Todos</option>{Object.entries(statusLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
+        <div><label className="text-[0.625rem] text-gray-400 dark:text-neutral-500 font-medium">Estado</label><select value={filters.status} onChange={e => onChange({ ...filters, status: e.target.value })} className="select text-xs py-1.5 mt-0.5"><option value="">Todos</option>{Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
         <div><label className="text-[0.625rem] text-gray-400 dark:text-neutral-500 font-medium">Prioridad</label><select value={filters.priority} onChange={e => onChange({ ...filters, priority: e.target.value })} className="select text-xs py-1.5 mt-0.5"><option value="">Todas</option><option value="HIGH">Alta</option><option value="MEDIUM">Media</option><option value="LOW">Baja</option></select></div>
         <div><label className="text-[0.625rem] text-gray-400 dark:text-neutral-500 font-medium">Categoría</label><select value={filters.categoryId} onChange={e => onChange({ ...filters, categoryId: e.target.value })} className="select text-xs py-1.5 mt-0.5"><option value="">Todas</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
         <div><label className="text-[0.625rem] text-gray-400 dark:text-neutral-500 font-medium">Objetivo</label><select value={filters.goalId} onChange={e => onChange({ ...filters, goalId: e.target.value })} className="select text-xs py-1.5 mt-0.5"><option value="">Todos</option>{goals.filter(g => g.status === 'ACTIVE').map(g => <option key={g.id} value={g.id}>{g.title}</option>)}</select></div>
@@ -209,11 +206,11 @@ function CalendarView({ date, monthTasks, onPrev, onNext }) {
     <div className="card p-4">
       <div className="flex items-center justify-between mb-4">
         <button onClick={onPrev} className="btn-ghost btn-sm p-1.5"><ChevronLeft size={16} /></button>
-        <span className="text-sm font-medium text-gray-700 dark:text-neutral-200">{months[month - 1]} {year}</span>
+        <span className="text-sm font-medium text-gray-700 dark:text-neutral-200">{MONTHS[month - 1]} {year}</span>
         <button onClick={onNext} className="btn-ghost btn-sm p-1.5"><ChevronRight size={16} /></button>
       </div>
       <div className="grid grid-cols-7 gap-0.5">
-        {weekDays.map(d => <div key={d} className="text-[0.625rem] text-gray-400 dark:text-neutral-500 font-medium text-center py-1.5">{d}</div>)}
+        {WEEK_DAYS.map(d => <div key={d} className="text-[0.625rem] text-gray-400 dark:text-neutral-500 font-medium text-center py-1.5">{d}</div>)}
         {Array.from({ length: startOffset }).map((_, i) => <div key={`e${i}`} />)}
         {Array.from({ length: daysInMonth }, (_, i) => {
           const day = i + 1; const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;

@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import BrandLogo from '../ui/BrandLogo';
 import ThemeToggle from '../ui/ThemeToggle';
 import SearchPalette from '../ui/SearchPalette';
+import { useModKey } from '../../hooks/useModKey';
+import { useTouchDevice } from '../../hooks/useTouchDevice';
 import {
   LayoutDashboard,
   CheckSquare,
@@ -22,26 +24,12 @@ const navItems = [
   { to: '/goals', label: 'Objetivos', icon: Target },
 ];
 
-function getModKey() {
-  const ua = navigator.userAgent || '';
-  return ua.includes('Mac') && !ua.includes('Mobile') ? '⌘' : 'Ctrl +';
-}
-
-function isTouchDevice() {
-  return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-}
-
 export default function Layout() {
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [modKey, setModKey] = useState('');
-  const [touch, setTouch] = useState(false);
-
-  useEffect(() => {
-    setModKey(getModKey());
-    setTouch(isTouchDevice());
-  }, []);
+  const modKey = useModKey();
+  const touch = useTouchDevice();
 
   useEffect(() => {
     function handleKeyDown(e) {
