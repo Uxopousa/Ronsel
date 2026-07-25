@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import * as categoryService from '../../services/categories';
-import { X, Edit3, Trash2, Plus } from 'lucide-react';
+import { Edit3, Trash2, Plus } from 'lucide-react';
+import BaseModal from '../ui/BaseModal';
 
 const presetColors = [
   '#6366f1', '#8b5cf6', '#d946ef', '#ec4899', '#f43f5e',
@@ -32,13 +33,8 @@ export default function CategoryModal({ categories, onChange, onClose }) {
   async function handleDelete(id) { if (!window.confirm('¿Eliminar esta categoría?')) return; try { await categoryService.deleteCategory(id); onChange(); } catch { setError('Error al eliminar la categoría'); } }
 
   return (
-    <div className="fixed inset-0 bg-black/20 dark:bg-black/60 flex items-center justify-center z-50 animate-fade-in" onClick={onClose}>
-      <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-modal w-full max-w-md mx-4 animate-scale-in" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 h-12 border-b border-gray-100 dark:border-neutral-700">
-          <h2 className="text-sm font-semibold text-gray-900 dark:text-neutral-100">Categorías</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"><X size={16} /></button>
-        </div>
-        <div className="p-5">
+    <BaseModal title="Categorías" onClose={onClose}>
+      <div className="p-5">
           <form onSubmit={handleSubmit} className="mb-5 space-y-3">
             {error && (
               <div className="px-3 py-2 bg-red-50 dark:bg-red-950 border border-red-100 dark:border-red-900 rounded-md text-xs text-red-600 dark:text-red-300">{error}</div>
@@ -75,8 +71,7 @@ export default function CategoryModal({ categories, onChange, onClose }) {
               </div>
             ))}
           </div>
-        </div>
       </div>
-    </div>
+    </BaseModal>
   );
 }
