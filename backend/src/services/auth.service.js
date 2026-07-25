@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import prisma from '../prisma/index.js';
 import { hashPassword, comparePassword } from '../utils/password.js';
 import { signToken } from '../utils/jwt.js';
@@ -47,14 +48,12 @@ export async function getProfile(userId) {
 }
 
 export async function demoLogin() {
-  const email = 'demo@ronsel.app';
-  let user = await prisma.user.findUnique({ where: { email } });
-  if (!user) {
-    const hashed = await hashPassword('password123');
-    user = await prisma.user.create({
-      data: { email, password: hashed, name: 'Demo' },
-    });
-  }
+  const uid = randomUUID();
+  const email = `demo-${uid}@ronsel.app`;
+  const hashed = await hashPassword(uid);
+  const user = await prisma.user.create({
+    data: { email, password: hashed, name: 'Demo' },
+  });
   const token = signToken({ id: user.id });
   return { token, user: { id: user.id, email: user.email, name: user.name } };
 }
