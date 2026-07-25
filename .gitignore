@@ -1,9 +1,16 @@
 # Dependencies
 node_modules/
+.pnpm-store/
+.yarn/
 
 # Build output
 dist/
 build/
+out/
+.next/
+.nuxt/
+.svelte-kit/
+.vite/
 
 # Environment and secrets
 .env
@@ -15,6 +22,10 @@ build/
 # Logs
 *.log
 logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # OS files
 .DS_Store
@@ -26,6 +37,10 @@ desktop.ini
 .idea/
 *.swp
 *.swo
+*~
+
+# Agent context (local, not committed)
+AGENTS.md
 
 AGENTIC-BOOTSTRAP.md
 .opencode/
@@ -38,8 +53,16 @@ AGENTIC-BOOTSTRAP.md
 .temp/
 .tmp/
 
+# Agent per-machine settings
+.claude/settings.local.json
+
+# Bootstrap artifacts (auto-generated)
+.agents/
+.docs/
+
 # Testing
 coverage/
+.nyc_output/
 
 # Misc
 .turbo/
