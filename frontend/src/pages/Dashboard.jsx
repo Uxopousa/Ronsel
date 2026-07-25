@@ -9,6 +9,7 @@ import * as taskService from '../services/tasks';
 import * as habitService from '../services/habits';
 import TaskModal from '../components/shared/TaskModal';
 import { useToast } from '../components/ui/Toast';
+import { SkeletonDashboard } from '../components/ui/Skeleton';
 import { WEEK_DAYS, DAY_NAMES, MONTHS } from '../constants';
 
 const LS_VIEW = 'dash_calView';
@@ -87,7 +88,7 @@ export default function Dashboard() {
   function toggleShowHabits(v) { setShowHabits(v); persist(LS_SHOW_HABITS, v); }
   function toggleColorPriority(v) { setColorPriority(v); persist(LS_COLOR_PRIORITY, v); }
 
-  if (loading) return <p className="text-gray-400 dark:text-neutral-500 text-sm py-8 text-center">Cargando...</p>;
+  if (loading) return <SkeletonDashboard />;
   if (!data) return <p className="text-gray-400 dark:text-neutral-500 text-sm py-8 text-center">Error al cargar el dashboard.</p>;
 
   const overdue = (data.tasksToday || []).filter(t => t.dueDate && t.dueDate.slice(0, 10) < todayStr);

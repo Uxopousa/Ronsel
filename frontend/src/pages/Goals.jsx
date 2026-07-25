@@ -3,17 +3,19 @@ import * as goalService from '../services/goals';
 import * as taskService from '../services/tasks';
 import GoalModal from '../components/shared/GoalModal';
 import { useToast } from '../components/ui/Toast';
+import { SkeletonGoalsPage } from '../components/ui/Skeleton';
 import { Plus, Target, ChevronDown, ChevronUp, Check, Plus as PlusIcon, CheckCircle } from 'lucide-react';
 
 export default function Goals() {
   const [goals, setGoals] = useState([]);
   const [goalTasks, setGoalTasks] = useState({});
+  const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
   const [expanded, setExpanded] = useState({});
   const [newTaskText, setNewTaskText] = useState({});
   const [loadingTasks, setLoadingTasks] = useState({});
   const [submittingTask, setSubmittingTask] = useState({});
-  function load() { goalService.getGoals().then(setGoals).catch(() => {}); }
+  function load() { setLoading(true); goalService.getGoals().then(setGoals).catch(() => {}).finally(() => setLoading(false)); }
   useEffect(() => { load(); }, []);
 
   const loadTasksForGoal = useCallback(async (goalId) => {
@@ -86,14 +88,16 @@ export default function Goals() {
         <button onClick={() => setModal({})} className="btn-primary btn-sm gap-1.5"><Plus size={14} /> Nuevo objetivo</button>
       </div>
 
-      {goals.length === 0 && (
+      {loading && <SkeletonGoalsPage />}
+
+      {!loading && goals.length === 0 && (
         <div className="text-center py-16">
           <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3"><Target size={20} className="text-gray-400 dark:text-neutral-500" /></div>
           <p className="text-sm text-gray-400 dark:text-neutral-500">No hay objetivos. Crea tu primer objetivo.</p>
         </div>
       )}
 
-      <div className="space-y-1.5">
+      {!loading && goals.length > 0 && <div className="space-y-1.5">
         {goals.map(goal => {
           const prog = computeProgress(goal);
           const isExpanded = !!expanded[goal.id];
@@ -167,7 +171,7 @@ export default function Goals() {
             </div>
           );
         })}
-      </div>
+      </div>}
 
       {modal && <GoalModal goal={modal} onSave={handleSave} onClose={() => setModal(null)} />}
     </div>

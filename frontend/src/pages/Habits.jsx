@@ -3,6 +3,7 @@ import * as habitService from '../services/habits';
 import * as categoryService from '../services/categories';
 import HabitModal from '../components/shared/HabitModal';
 import { useToast } from '../components/ui/Toast';
+import { SkeletonHabitsPage } from '../components/ui/Skeleton';
 import {
   Plus, Check, Zap, TrendingUp, ChevronDown, ChevronUp, Flame,
 } from 'lucide-react';
@@ -11,12 +12,19 @@ import { WEEK_DAYS_SHORT, MONTHS } from '../constants';
 export default function Habits() {
   const [habits, setHabits] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
   const [expanded, setExpanded] = useState({});
 
   function load() {
-    habitService.getHabits().then(setHabits).catch(() => {});
-    categoryService.getCategories().then(setCategories).catch(() => {});
+    setLoading(true);
+    Promise.all([
+      habitService.getHabits(),
+      categoryService.getCategories(),
+    ]).then(([h, c]) => {
+      setHabits(h);
+      setCategories(c);
+    }).catch(() => {}).finally(() => setLoading(false));
   }
   useEffect(() => { load(); }, []);
 
@@ -57,7 +65,9 @@ export default function Habits() {
         <button onClick={() => setModal({})} className="btn-primary btn-sm gap-1.5"><Plus size={14} /> Nuevo hábito</button>
       </div>
 
-      {habits.length > 0 && (
+      {loading && <SkeletonHabitsPage />}
+
+      {!loading && habits.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           <StatCard icon={Check} value={stats.completed} label="Hoy" color="green" />
           <StatCard icon={Flame} value={`${stats.pct}%`} label="Completado" color="orange" />
@@ -66,20 +76,20 @@ export default function Habits() {
         </div>
       )}
 
-      {habits.length === 0 && (
+      {!loading && habits.length === 0 && (
         <div className="text-center py-16">
           <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3"><Flame size={20} className="text-gray-400 dark:text-neutral-500" /></div>
           <p className="text-sm text-gray-400 dark:text-neutral-500">No hay hábitos. Crea tu primer hábito.</p>
         </div>
       )}
 
-      <div className="space-y-1.5">
+      {!loading && habits.length > 0 && <div className="space-y-1.5">
         {habits.map(habit => (
           <HabitCard key={habit.id} habit={habit} expanded={!!expanded[habit.id]}
             onToggle={() => handleToggle(habit.id)} onEdit={() => setModal(habit)}
             onDelete={() => handleDelete(habit.id)} onExpand={() => toggleExpand(habit.id)} />
         ))}
-      </div>
+      </div>}
 
       {modal && <HabitModal habit={modal} categories={categories} onSave={handleSave} onClose={() => setModal(null)} />}
     </div>
