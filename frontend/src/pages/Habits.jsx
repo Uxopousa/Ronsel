@@ -4,7 +4,7 @@ import * as categoryService from '../services/categories';
 import HabitModal from '../components/shared/HabitModal';
 import { useToast } from '../components/ui/Toast';
 import {
-  Plus, Edit3, Trash2, Check, Zap, TrendingUp, ChevronDown, ChevronUp, Flame,
+  Plus, Check, Zap, TrendingUp, ChevronDown, ChevronUp, Flame,
 } from 'lucide-react';
 import { WEEK_DAYS_SHORT, MONTHS } from '../constants';
 
@@ -137,7 +137,15 @@ function HabitCard({ habit, expanded, onToggle, onEdit, onDelete, onExpand }) {
         </div>
       </div>
 
-      {expanded && <HabitCalendarInline habitId={habit.id} />}
+      {expanded && (
+        <>
+          <HabitCalendarInline habitId={habit.id} />
+          <div className="flex gap-2 px-4 pb-4 pt-2 border-t border-gray-50 dark:border-neutral-700">
+            <button onClick={e => { e.stopPropagation(); onEdit(); }} className="btn-ghost btn-sm text-xs">Editar hábito</button>
+            <button onClick={e => { e.stopPropagation(); onDelete(); }} className="btn-ghost btn-sm text-xs hover:text-red-500 dark:hover:text-red-400">Eliminar</button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
