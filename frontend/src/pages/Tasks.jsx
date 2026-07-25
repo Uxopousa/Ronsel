@@ -5,6 +5,7 @@ import * as goalService from '../services/goals';
 import TaskModal from '../components/shared/TaskModal';
 import CategoryModal from '../components/shared/CategoryModal';
 import { useToast } from '../components/ui/Toast';
+import { SkeletonTasksPage } from '../components/ui/Skeleton';
 import {
   Plus, Settings2, Edit3, Trash2, Check, Search,
   SlidersHorizontal, ChevronLeft, ChevronRight, CalendarDays, List, X, ListTodo,
@@ -123,7 +124,7 @@ export default function Tasks() {
         {quickFilter && <button onClick={() => setQuickFilter('')} className="px-2.5 py-1 text-xs rounded-md text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300"><X size={12} /></button>}
       </div>
 
-      {loading && <p className="text-gray-400 dark:text-neutral-500 text-sm py-8 text-center">Cargando...</p>}
+      {loading && <SkeletonTasksPage />}
 
       {!loading && view === 'list' && (<>
         {tasks.length === 0 ? (

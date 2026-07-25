@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard';
 import Tasks from './pages/Tasks';
 import Habits from './pages/Habits';
 import Goals from './pages/Goals';
+import { SkeletonDemoRedirect } from './components/ui/Skeleton';
 import api from './services/api';
 
 function DemoRedirect() {
@@ -29,18 +30,10 @@ function DemoRedirect() {
       .catch(() => setError(true));
   }, [user, loading]);
 
-  if (loading) return (
-    <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-neutral-950">
-      <p className="text-gray-400 dark:text-neutral-500 text-sm">Entrando en la demo...</p>
-    </div>
-  );
+  if (loading) return <SkeletonDemoRedirect />;
   if (user) return <Navigate to="/" />;
   if (error) return <Navigate to="/login" />;
-  return (
-    <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-neutral-950">
-      <p className="text-gray-400 dark:text-neutral-500 text-sm">Entrando en la demo...</p>
-    </div>
-  );
+  return <SkeletonDemoRedirect />;
 }
 
 export default function App() {
