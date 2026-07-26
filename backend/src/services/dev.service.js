@@ -98,9 +98,9 @@ export async function seed(userId) {
   }
 
   for (const g of SEED_DATA.goals) {
-    const goal = await prisma.goal.create({ data: { ...g, userId } });
-    const goalTasks = g.tasks || [];
-    for (const t of goalTasks) {
+    const { tasks: goalTasks, ...goalData } = g;
+    const goal = await prisma.goal.create({ data: { ...goalData, userId } });
+    for (const t of (goalTasks || [])) {
       await prisma.task.create({
         data: { ...t, goalId: goal.id, userId, dueDate: new Date(Date.now() + Math.floor(Math.random() * 14) * 86400000) },
       });
