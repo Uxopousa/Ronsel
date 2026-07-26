@@ -66,7 +66,7 @@ export default function Layout() {
     <div className="flex h-screen bg-gray-50 dark:bg-neutral-950">
       <aside
         className={`${
-          mobileOpen ? 'block' : 'hidden'
+          mobileOpen ? 'flex flex-col' : 'hidden'
         } md:flex md:flex-col w-56 bg-white dark:bg-neutral-900 border-r border-gray-100 dark:border-neutral-700 fixed md:static inset-y-0 left-0 z-40 animate-fade-in`}
       >
         {/* Brand */}

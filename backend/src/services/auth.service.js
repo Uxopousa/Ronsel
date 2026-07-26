@@ -3,6 +3,7 @@ import prisma from '../prisma/index.js';
 import { hashPassword, comparePassword } from '../utils/password.js';
 import { signToken } from '../utils/jwt.js';
 import ApiError from '../utils/ApiError.js';
+import { seed } from './dev.service.js';
 
 export async function register(data) {
   const existing = await prisma.user.findUnique({ where: { email: data.email } });
@@ -54,6 +55,7 @@ export async function demoLogin() {
   const user = await prisma.user.create({
     data: { email, password: hashed, name: 'Demo' },
   });
+  await seed(user.id).catch(() => {}); // Pre-loaded data for demo
   const token = signToken({ id: user.id });
   return { token, user: { id: user.id, email: user.email, name: user.name } };
 }
