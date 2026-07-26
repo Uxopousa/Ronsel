@@ -1,6 +1,33 @@
 import prisma from '../prisma/index.js';
 import ApiError from '../utils/ApiError.js';
 
+const BIWEEK_REF = new Date('2000-01-03'); // Monday reference for biweek parity
+
+export function isTodayScheduled(habit) {
+  const todayDow = new Date().getDay(); // 0=Sun, 1=Mon...
+
+  if (habit.frequency === 'DAILY') return true;
+
+  if (habit.frequency === 'WEEKLY') {
+    if (habit.daysOfWeek && Array.isArray(habit.daysOfWeek)) {
+      return habit.daysOfWeek.includes(todayDow);
+    }
+    return true; // no days selected → show every day
+  }
+
+  if (habit.frequency === 'BIWEEKLY') {
+    if (!habit.daysOfWeek) return true;
+    const d = habit.daysOfWeek;
+    const msPerWeek = 7 * 86400000;
+    const weekParity = Math.floor((Date.now() - BIWEEK_REF.getTime()) / msPerWeek) % 2;
+    const weekKey = weekParity === 0 ? 'week1' : 'week2';
+    const days = d[weekKey];
+    return Array.isArray(days) && days.includes(todayDow);
+  }
+
+  return true;
+}
+
 export async function list(userId) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -18,10 +45,11 @@ export async function list(userId) {
   });
 
   return habits.map((h) => ({
-    ...h,
-    completedToday: h.habitLogs.length > 0 && h.habitLogs[0].completed,
-    habitLogs: undefined,
-  }));
+      ...h,
+      completedToday: h.habitLogs.length > 0 && h.habitLogs[0].completed,
+      scheduledToday: isTodayScheduled(h),
+      habitLogs: undefined,
+    }));
 }
 
 export async function getById(userId, id) {

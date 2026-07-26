@@ -15,7 +15,11 @@ import {
   Menu,
   X,
   Search,
+  FlaskConical,
+  Trash2,
+  CheckCircle2,
 } from 'lucide-react';
+import api from '../../services/api';
 
 const navItems = [
   { to: '/', label: 'Inicio', icon: LayoutDashboard, end: true },
@@ -28,8 +32,21 @@ export default function Layout() {
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [devStatus, setDevStatus] = useState(null);
   const modKey = useModKey();
   const touch = useTouchDevice();
+
+  async function handleSeed() {
+    setDevStatus('seed');
+    try { await api.post('/dev/seed'); window.location.reload(); }
+    catch { setDevStatus('error'); setTimeout(() => setDevStatus(null), 2000); }
+  }
+  async function handleWipe() {
+    if (!window.confirm('¿Eliminar todos tus datos? No se puede deshacer.')) return;
+    setDevStatus('wipe');
+    try { await api.post('/dev/wipe'); window.location.reload(); }
+    catch { setDevStatus('error'); setTimeout(() => setDevStatus(null), 2000); }
+  }
 
   useEffect(() => {
     function handleKeyDown(e) {
@@ -127,6 +144,22 @@ export default function Layout() {
           </div>
           <div className="flex items-center gap-1">
             <ThemeToggle />
+            <button
+              onClick={handleSeed}
+              disabled={devStatus === 'seed'}
+              className="btn-ghost btn-sm p-1.5 text-gray-400 dark:text-neutral-500 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950 transition-colors"
+              title="Rellenar con datos de ejemplo"
+            >
+              {devStatus === 'seed' ? <CheckCircle2 size={13} className="animate-pulse" /> : <FlaskConical size={13} />}
+            </button>
+            <button
+              onClick={handleWipe}
+              disabled={devStatus === 'wipe'}
+              className="btn-ghost btn-sm p-1.5 text-gray-400 dark:text-neutral-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
+              title="Eliminar todos los datos"
+            >
+              {devStatus === 'wipe' ? <CheckCircle2 size={13} className="animate-pulse" /> : <Trash2 size={13} />}
+            </button>
             <button
               onClick={logout}
               className="btn-ghost btn-sm flex-1 justify-start text-gray-400 dark:text-neutral-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 gap-2"

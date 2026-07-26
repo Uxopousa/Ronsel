@@ -1,4 +1,5 @@
 import prisma from '../prisma/index.js';
+import { isTodayScheduled } from './habit.service.js';
 
 export async function getDashboard(userId) {
   const today = new Date();
@@ -32,7 +33,7 @@ export async function getDashboard(userId) {
           habitLogs: { none: { date: today } },
         },
         include: { category: { select: { id: true, name: true, color: true } } },
-      }),
+      }).then(habits => habits.filter(isTodayScheduled)),
       prisma.goal.findMany({
         where: { userId, status: 'ACTIVE' },
       }),

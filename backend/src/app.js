@@ -11,6 +11,7 @@ import categoryRoutes from './routes/category.routes.js';
 import taskRoutes from './routes/task.routes.js';
 import habitRoutes from './routes/habit.routes.js';
 import goalRoutes from './routes/goal.routes.js';
+import devRoutes from './routes/dev.routes.js';
 import errorHandler from './middleware/error.middleware.js';
 import { setupSwagger } from './docs/swagger.js';
 
@@ -29,6 +30,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/habits', habitRoutes);
 app.use('/api/goals', goalRoutes);
+app.use('/api/dev', devRoutes);
 
 app.use(errorHandler);
 

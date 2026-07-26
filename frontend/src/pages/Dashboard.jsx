@@ -12,6 +12,33 @@ import { useToast } from '../components/ui/Toast';
 import { SkeletonDashboard } from '../components/ui/Skeleton';
 import { WEEK_DAYS, DAY_NAMES, MONTHS } from '../constants';
 
+const BIWEEK_REF = new Date('2000-01-03');
+
+function habitShowsOnDate(habit, dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const dow = d.getDay();
+  const targetDate = new Date(dateStr + 'T00:00:00');
+  const created = new Date(habit.createdAt);
+  created.setHours(0,0,0,0);
+
+  // No mostrar antes de la fecha de creación
+  if (targetDate < created) return false;
+
+  if (habit.frequency === 'DAILY') return true;
+  if (habit.frequency === 'WEEKLY') {
+    if (!habit.daysOfWeek || !Array.isArray(habit.daysOfWeek)) return true;
+    return habit.daysOfWeek.includes(dow);
+  }
+  if (habit.frequency === 'BIWEEKLY') {
+    if (!habit.daysOfWeek || !habit.daysOfWeek.week1) return true;
+    const weekParity = Math.floor((targetDate - BIWEEK_REF) / (7 * 86400000)) % 2;
+    const weekKey = weekParity === 0 ? 'week1' : 'week2';
+    const days = habit.daysOfWeek[weekKey];
+    return Array.isArray(days) && days.includes(dow);
+  }
+  return false;
+}
+
 const LS_VIEW = 'dash_calView';
 const LS_SHOW_HABITS = 'dash_showHabits';
 const LS_COLOR_PRIORITY = 'dash_colorPriority';
@@ -191,13 +218,13 @@ export default function Dashboard() {
       )}
 
       <section className="mb-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
           <h2 className="section-title">Calendario</h2>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
             <div className="flex bg-gray-100 dark:bg-neutral-800 rounded-md p-0.5">
               {[{k:'3day',l:'3 días'},{k:'week',l:'Semana'},{k:'month',l:'Mes'}].map(({k,l}) => (
                 <button key={k} onClick={() => setView(k)}
-                  className={`px-3 py-1.5 text-xs rounded font-medium transition-all ${calView === k ? 'bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100 shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-200'}`}>
+                  className={`px-2.5 sm:px-3 py-1.5 text-xs rounded font-medium transition-all ${calView === k ? 'bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100 shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-200'}`}>
                   {l}
                 </button>
               ))}
@@ -338,65 +365,123 @@ function MultiDayView({ calView, allTasks, todayStr, yesterdayStr, tomorrowStr, 
   }
 
   if (days.length === 0) return null;
+  const isDayView = days.length === 1;
+  const isCompact = days.length === 7;
+
+  function renderDay(day) {
+    const dayTasks = allTasks[day.date] || [];
+    const habitsToday = showHabits ? (allHabits || []).filter(h => habitShowsOnDate(h, day.date)) : [];
+
+    if (isCompact) {
+      // Week view: row layout on mobile, grid cell on desktop
+      return (
+        <button key={day.date} onClick={() => onDayClick(day.date, dayTasks)}
+          className={`rounded-lg text-left transition-all flex md:flex-col items-start gap-2 md:gap-0 p-2 md:p-1.5 overflow-hidden
+            ${day.isToday ? 'ring-2 ring-inset ring-primary-400 dark:ring-primary-500 bg-primary-50/50 dark:bg-primary-500/5' : 'bg-white dark:bg-neutral-900 card'}
+          `}
+        >
+          <div className="flex md:flex-col items-baseline md:items-start gap-1 md:gap-0 min-w-[50px] md:min-w-0 flex-shrink-0 md:mb-1">
+            <span className={`text-xs md:text-[0.625rem] font-medium leading-tight ${day.isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-neutral-200'}`}>
+              {day.isAyer ? 'Ayer' : day.isManana ? 'Mañana' : day.isToday ? 'Hoy' : day.label}
+            </span>
+            <span className={`text-sm md:text-xs font-semibold ${day.isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-800 dark:text-neutral-100'}`}>
+              {day.dayNum}
+              <span className="text-[0.625rem] md:text-[0.5rem] font-normal text-gray-400 dark:text-neutral-500 ml-0.5">{day.month}</span>
+            </span>
+          </div>
+          <div className="flex-1 flex flex-wrap md:block gap-1 md:gap-0 min-w-0">
+            {dayTasks.map(t => (
+              <span key={t.id} className={`inline-block md:block text-[0.625rem] md:text-xs leading-tight px-1.5 md:px-1.5 py-0.5 md:py-1 rounded ${taskChipColor(t, colorPriority)}`}>
+                {t.title}
+              </span>
+            ))}
+            {showHabits && habitsToday.length > 0 && (
+              habitsToday.map(h => (
+                <span key={h.id} className={`inline-block text-[0.5rem] px-1 py-0.5 rounded bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 truncate ${(day.isToday && h.completedToday) ? 'line-through opacity-50' : ''}`}>{h.name}</span>
+              ))
+            )}
+            {dayTasks.length === 0 && habitsToday.length === 0 && <span className="text-[0.625rem] text-gray-300 dark:text-neutral-600">—</span>}
+          </div>
+        </button>
+      );
+    }
+
+    // 3-day or single-day view
+    if (isDayView) {
+      return (
+        <button key={day.date} onClick={() => onDayClick(day.date, dayTasks)}
+          className={`rounded-lg text-left transition-all overflow-hidden min-h-[400px] p-4 ${
+            day.isToday ? 'ring-2 ring-inset ring-primary-400 dark:ring-primary-500 bg-primary-50/50 dark:bg-primary-500/5' : 'bg-white dark:bg-neutral-900 card'
+          }`}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <span className="text-sm font-semibold text-gray-700 dark:text-neutral-200">{day.label}</span>
+              <p className="text-xs text-gray-400 dark:text-neutral-500 mt-0.5">{day.label}, {day.dayNum} de {day.month}</p>
+            </div>
+            <span className="text-2xl font-bold text-gray-800 dark:text-neutral-100">{day.dayNum}</span>
+          </div>
+          <div className="space-y-1">
+            {dayTasks.map(t => (
+              <div key={t.id} className={`text-xs px-2 py-1 rounded truncate ${taskChipColor(t, colorPriority)}`}>{t.title}</div>
+            ))}
+            {dayTasks.length === 0 && <p className="text-sm text-gray-300 dark:text-neutral-600 py-8 text-center">Sin tareas</p>}
+            {showHabits && habitsToday.length > 0 && day.date >= todayStr && (
+              <div className="flex flex-wrap gap-1 mt-3 pt-3 border-t border-gray-50 dark:border-neutral-800">
+                {habitsToday.map(h => (
+                  <span key={h.id} className={`text-xs px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 truncate ${(day.isToday && h.completedToday) ? 'line-through opacity-60' : 'font-medium'}`}>{h.name}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        </button>
+      );
+    }
+
+    // 3-day view: row on mobile, column on desktop
+    return (
+      <button key={day.date} onClick={() => onDayClick(day.date, dayTasks)}
+        className={`rounded-lg text-left transition-all flex md:flex-col items-start gap-2 p-2 md:p-4 overflow-hidden ${
+          day.isToday ? 'ring-2 ring-inset ring-primary-400 dark:ring-primary-500 bg-primary-50/50 dark:bg-primary-500/5' : 'bg-white dark:bg-neutral-900 card'
+        }`}
+      >
+        <div className="flex md:flex-col items-baseline md:items-start gap-1 md:gap-0 flex-shrink-0 min-w-[50px] md:min-w-0">
+          <span className={`text-xs md:text-sm font-semibold ${day.isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-neutral-200'}`}>
+            {day.isAyer ? 'Ayer' : day.isManana ? 'Mañana' : day.isToday ? 'Hoy' : day.label}
+          </span>
+          <span className={`text-sm md:text-xl font-bold ${day.isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-800 dark:text-neutral-100'}`}>
+            {day.dayNum}<span className="text-[0.625rem] md:text-xs font-normal text-gray-400 dark:text-neutral-500 ml-0.5">{day.month}</span>
+          </span>
+        </div>
+        <div className="flex-1 flex flex-wrap md:block gap-1 md:gap-1 min-w-0">
+          {dayTasks.map(t => (
+            <span key={t.id} className={`inline-block md:block text-xs px-1.5 py-0.5 rounded ${taskChipColor(t, colorPriority)}`}>{t.title}</span>
+          ))}
+          {showHabits && habitsToday.length > 0 && (
+            habitsToday.map(h => (
+              <span key={h.id} className={`inline-block md:inline-block text-[0.625rem] px-1 py-0.5 rounded bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 truncate ${(day.isToday && h.completedToday) ? 'line-through opacity-60' : 'font-medium'}`}>{h.name}</span>
+            ))
+          )}
+          {dayTasks.length === 0 && habitsToday.length === 0 && <span className="text-xs text-gray-300 dark:text-neutral-600">—</span>}
+        </div>
+      </button>
+    );
+  }
 
   return (
-    <div className={`grid gap-2 ${days.length === 1 ? '' : days.length === 3 ? 'grid-cols-3' : 'grid-cols-7'}`}>
-      {days.map(day => {
-        const dayTasks = allTasks[day.date] || [];
-        const habitsToday = showHabits ? (allHabits || []) : [];
-        const isDayView = days.length === 1;
-        const isCompact = days.length === 7;
-        return (
-          <button
-            key={day.date}
-            onClick={() => onDayClick(day.date, dayTasks)}
-            className={`rounded-lg text-left transition-all overflow-hidden ${
-              isDayView ? 'min-h-[400px] p-4' : isCompact ? 'min-h-[100px] p-1.5' : 'min-h-[220px] p-3'
-            } ${day.isToday ? 'ring-2 ring-primary-400 dark:ring-primary-500 bg-white dark:bg-neutral-900 ring-offset-0' : 'bg-white dark:bg-neutral-900 card'}`}
-          >
-            <div className={`flex items-center justify-between ${isDayView ? 'mb-4' : 'mb-2'}`}>
-              <div>
-                <span className={`${isDayView ? 'text-sm font-semibold' : isCompact ? 'text-[0.6875rem] font-medium' : 'text-xs font-semibold'} ${day.isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-neutral-200'}`}>
-                  {day.isAyer ? 'Ayer' : day.isManana ? 'Mañana' : day.isToday ? 'Hoy' : day.label}
-                </span>
-                {isDayView && (
-                  <p className="text-xs text-gray-400 dark:text-neutral-500 mt-0.5">{day.label}, {day.dayNum} de {day.month}</p>
-                )}
-              </div>
-              <span className={`${isDayView ? 'text-2xl font-bold' : isCompact ? 'text-sm font-semibold' : 'text-xl font-bold'} ${day.isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-800 dark:text-neutral-100'}`}>
-                {day.dayNum}
-                {!isDayView && <span className={`${isDayView ? 'text-sm font-normal ml-1' : isCompact ? 'text-[0.625rem] font-normal ml-0.5' : 'text-xs font-normal ml-1'} text-gray-400 dark:text-neutral-500`}>{day.month}</span>}
-              </span>
-            </div>
-            <div className={`space-y-${isDayView ? '1.5' : '1'}`}>
-              {dayTasks.slice(0, isDayView ? 12 : isCompact ? 3 : 6).map(t => (
-                <div key={t.id} className={`${isCompact ? 'text-[0.6875rem] px-1 py-0.5' : 'text-xs px-2 py-1'} rounded truncate ${taskChipColor(t, colorPriority)}`}>
-                  {t.title}
-                </div>
-              ))}
-              {dayTasks.length > (isDayView ? 12 : isCompact ? 3 : 6) && (
-                <p className={`${isCompact ? 'text-[0.625rem]' : 'text-xs'} text-gray-400 dark:text-neutral-500 pl-1`}>+{dayTasks.length - (isDayView ? 12 : isCompact ? 3 : 6)} más</p>
-              )}
-              {dayTasks.length === 0 && isDayView && (
-                <p className="text-sm text-gray-300 dark:text-neutral-600 py-8 text-center">Sin tareas</p>
-              )}
-              {showHabits && habitsToday.length > 0 && (
-                <div className={`flex flex-wrap gap-1 ${isDayView ? 'mt-3 pt-3 border-t border-gray-50 dark:border-neutral-800' : 'mt-1'}`}>
-                  {habitsToday.slice(0, isDayView ? 10 : 3).map(h => (
-                    <div key={h.id} className={`${isCompact ? 'text-[0.625rem] px-1 py-0.5' : 'text-xs px-1.5 py-0.5'} rounded bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 truncate ${h.completedToday ? 'line-through opacity-60' : 'font-medium'}`}>
-                      {h.name}
-                    </div>
-                  ))}
-                  {habitsToday.length > (isDayView ? 10 : 3) && (
-                    <span className={`${isCompact ? 'text-[0.625rem]' : 'text-xs'} text-gray-400 dark:text-neutral-500`}>+{habitsToday.length - (isDayView ? 10 : 3)}</span>
-                  )}
-                </div>
-              )}
-            </div>
-          </button>
-        );
-      })}
-    </div>
+    <>
+      {isCompact ? (
+        <div className="flex flex-col gap-1 md:hidden overflow-visible">{days.map(renderDay)}</div>
+      ) : null}
+      {!isCompact && !isDayView ? (
+        <div className="flex flex-col md:hidden gap-1 overflow-visible">{days.map(renderDay)}</div>
+      ) : null}
+      <div className={`${isCompact ? 'hidden md:block overflow-x-auto md:overflow-visible -mx-5 px-5 md:mx-0 md:px-0' : isDayView ? '' : 'hidden md:block'}`}>
+        <div className={`${isCompact ? 'grid md:grid-cols-7 gap-2 min-w-[560px] md:min-w-0' : isDayView ? '' : 'grid grid-cols-3 gap-2'}`}>
+          {days.map(renderDay)}
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -419,24 +504,24 @@ function MonthView({ date, allTasks, todayStr, onPrev, onNext, onDayClick, color
           const day = i + 1; const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`; const isToday = dateStr === todayStr;
           const dayTasks = allTasks[dateStr] || [];
           const count = dayTasks.length;
+          const hasHabits = showHabits && allHabits?.length > 0 && allHabits.some(h => habitShowsOnDate(h, dateStr));
           return (
             <button key={day} onClick={() => onDayClick(dateStr, dayTasks)}
               className={`py-1.5 rounded-md text-center transition-all hover:bg-gray-50 dark:hover:bg-neutral-800 ${isToday ? 'bg-primary-50 dark:bg-primary-500/10' : ''}`}>
               <span className={`text-xs font-semibold ${isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-600 dark:text-neutral-300'}`}>{day}</span>
-              {count > 0 && (
-                <div className="flex justify-center gap-0.5 mt-1">
-                  {Array.from({ length: Math.min(count, 3) }).map((_, j) => {
-                    const t = dayTasks[j];
-                    const cls = t.status === 'COMPLETED'
-                      ? 'bg-gray-200 dark:bg-neutral-700'
-                      : colorPriority
-                        ? t.priority === 'HIGH' ? 'bg-red-400 dark:bg-red-500' : t.priority === 'MEDIUM' ? 'bg-orange-400 dark:bg-orange-500' : 'bg-gray-400 dark:bg-gray-500'
-                        : 'bg-primary-400 dark:bg-primary-500';
-                    return <div key={j} className={`w-1.5 h-1.5 rounded-full ${cls}`} />;
-                  })}
-                  {count > 3 && <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-neutral-600" />}
-                </div>
-              )}
+              <div className="flex justify-center gap-0.5 mt-1 min-h-[6px]">
+                {count > 0 && Array.from({ length: Math.min(count, 3) }).map((_, j) => {
+                  const t = dayTasks[j];
+                  const cls = t.status === 'COMPLETED'
+                    ? 'bg-gray-200 dark:bg-neutral-700'
+                    : colorPriority
+                      ? t.priority === 'HIGH' ? 'bg-red-400 dark:bg-red-500' : t.priority === 'MEDIUM' ? 'bg-orange-400 dark:bg-orange-500' : 'bg-gray-400 dark:bg-gray-500'
+                      : 'bg-primary-400 dark:bg-primary-500';
+                  return <div key={j} className={`w-2 h-2 rounded-full ${cls}`} />;
+                })}
+                {count > 3 && <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-neutral-600" />}
+                {hasHabits && <div className="w-2 h-2 rounded-full bg-amber-400 dark:bg-amber-500" />}
+              </div>
             </button>
           );
         })}
