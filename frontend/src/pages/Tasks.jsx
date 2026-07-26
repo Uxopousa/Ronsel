@@ -97,22 +97,24 @@ export default function Tasks() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 mb-3">
-        <div className="flex-1 relative">
+      <div className="flex flex-col sm:flex-row gap-2 mb-3">
+        <div className="flex-1 relative order-1 sm:order-none">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-500" />
-          <input type="text" placeholder="Buscar tareas..." value={search} onChange={e => setSearch(e.target.value)} className="input pl-9 pr-8 text-sm h-9" />
+          <input type="text" placeholder="Buscar tareas..." value={search} onChange={e => setSearch(e.target.value)} className="input pl-9 pr-8 text-sm h-9 w-full" />
           {search && <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300"><X size={14} /></button>}
         </div>
-        <div className="relative">
-          <button onClick={() => setFilterOpen(!filterOpen)} className={`btn-secondary btn-sm gap-1.5 ${filterOpen ? 'bg-gray-100 dark:bg-neutral-800' : ''}`}><SlidersHorizontal size={13} />Filtros{(filters.status || filters.priority || filters.categoryId || filters.goalId) && <span className="w-1.5 h-1.5 rounded-full bg-primary-600 dark:bg-primary-400" />}</button>
-          {filterOpen && <FilterPanel filters={filters} categories={categories} goals={goals} onChange={f => setFilters(f)} onClose={() => setFilterOpen(false)} />}
-        </div>
-        <select value={filters.sortBy} onChange={e => setFilters({ ...filters, sortBy: e.target.value, sortOrder: e.target.value === 'dueDate' ? 'asc' : 'desc' })} className="select text-xs py-1.5 w-28">
-          <option value="createdAt">Fecha creación</option><option value="dueDate">Fecha límite</option><option value="priority">Prioridad</option>
-        </select>
-        <div className="flex bg-gray-100 dark:bg-neutral-800 rounded-md p-0.5 gap-0.5">
-          <button onClick={() => setView('list')} className={`p-1.5 rounded ${view === 'list' ? 'bg-white dark:bg-neutral-700 shadow-sm' : 'text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300'}`}><List size={14} /></button>
-          <button onClick={() => setView('calendar')} className={`p-1.5 rounded ${view === 'calendar' ? 'bg-white dark:bg-neutral-700 shadow-sm' : 'text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300'}`}><CalendarDays size={14} /></button>
+        <div className="flex items-center gap-2 order-2 sm:order-none">
+          <div className="relative">
+            <button onClick={() => setFilterOpen(!filterOpen)} className={`btn-secondary btn-sm gap-1.5 ${filterOpen ? 'bg-gray-100 dark:bg-neutral-800' : ''}`}><SlidersHorizontal size={13} />Filtros{(filters.status || filters.priority || filters.categoryId || filters.goalId) && <span className="w-1.5 h-1.5 rounded-full bg-primary-600 dark:bg-primary-400" />}</button>
+            {filterOpen && <FilterPanel filters={filters} categories={categories} goals={goals} onChange={f => setFilters(f)} onClose={() => setFilterOpen(false)} />}
+          </div>
+          <select value={filters.sortBy} onChange={e => setFilters({ ...filters, sortBy: e.target.value, sortOrder: e.target.value === 'dueDate' ? 'asc' : 'desc' })} className="select text-xs py-1.5 w-auto min-w-0 sm:min-w-[7rem]">
+            <option value="createdAt">Creación</option><option value="dueDate">Fecha límite</option><option value="priority">Prioridad</option>
+          </select>
+          <div className="flex bg-gray-100 dark:bg-neutral-800 rounded-md p-0.5 gap-0.5">
+            <button onClick={() => setView('list')} className={`p-1.5 rounded ${view === 'list' ? 'bg-white dark:bg-neutral-700 shadow-sm' : 'text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300'}`} title="Lista"><List size={14} /></button>
+            <button onClick={() => setView('calendar')} className={`p-1.5 rounded ${view === 'calendar' ? 'bg-white dark:bg-neutral-700 shadow-sm' : 'text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300'}`} title="Calendario"><CalendarDays size={14} /></button>
+          </div>
         </div>
       </div>
 
