@@ -152,7 +152,7 @@ export default function Tasks() {
                   {task.dueDate && <span className="hidden sm:inline">{new Date(task.dueDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span>}
                   <span className={`badge ${task.priority === 'HIGH' ? 'bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400' : task.priority === 'MEDIUM' ? 'bg-orange-50 dark:bg-orange-950 text-orange-600 dark:text-orange-400' : 'bg-gray-50 dark:bg-neutral-800 text-gray-500 dark:text-neutral-400'}`}>{task.priority === 'HIGH' ? 'Alta' : task.priority === 'MEDIUM' ? 'Media' : 'Baja'}</span>
                 </div>
-                <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex gap-0.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                   <button onClick={() => setTaskModal(task)} className="btn-ghost btn-sm p-1.5"><Edit3 size={12} /></button>
                   <button onClick={() => handleDelete(task.id)} className="btn-ghost btn-sm p-1.5 hover:text-red-500 dark:hover:text-red-400"><Trash2 size={12} /></button>
                 </div>

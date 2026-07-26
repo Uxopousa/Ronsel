@@ -5,7 +5,7 @@ import HabitModal from '../components/shared/HabitModal';
 import { useToast } from '../components/ui/Toast';
 import { SkeletonHabitsPage } from '../components/ui/Skeleton';
 import {
-  Plus, Check, Zap, TrendingUp, ChevronDown, ChevronUp, Flame,
+  Plus, Check, Zap, TrendingUp, Flame, Edit3, Trash2,
 } from 'lucide-react';
 import { WEEK_DAYS_SHORT, MONTHS } from '../constants';
 
@@ -14,7 +14,6 @@ export default function Habits() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
-  const [expanded, setExpanded] = useState({});
 
   function load() {
     setLoading(true);
@@ -56,8 +55,6 @@ export default function Habits() {
     return { total, completed, pct: total > 0 ? Math.round((completed / total) * 100) : 0, maxStreak, currentStreakTotal };
   }, [habits]);
 
-  function toggleExpand(id) { setExpanded(prev => ({ ...prev, [id]: !prev[id] })); }
-
   return (
     <div className="max-w-4xl">
       <div className="flex items-center justify-between mb-5">
@@ -85,9 +82,9 @@ export default function Habits() {
 
       {!loading && habits.length > 0 && <div className="space-y-1.5">
         {habits.map(habit => (
-          <HabitCard key={habit.id} habit={habit} expanded={!!expanded[habit.id]}
+          <HabitCard key={habit.id} habit={habit}
             onToggle={() => handleToggle(habit.id)} onEdit={() => setModal(habit)}
-            onDelete={() => handleDelete(habit.id)} onExpand={() => toggleExpand(habit.id)} />
+            onDelete={() => handleDelete(habit.id)} />
         ))}
       </div>}
 
@@ -106,7 +103,7 @@ function StatCard({ icon: Icon, value, label, color }) {
   );
 }
 
-function HabitCard({ habit, expanded, onToggle, onEdit, onDelete, onExpand }) {
+function HabitCard({ habit, onToggle, onEdit, onDelete }) {
   const [weekData, setWeekData] = useState({});
 
   useEffect(() => {
@@ -116,11 +113,25 @@ function HabitCard({ habit, expanded, onToggle, onEdit, onDelete, onExpand }) {
       .catch(() => {});
   }, [habit.id]);
 
-  const freqLabel = habit.frequency === 'DAILY' ? 'Diario' : 'Semanal';
+  const DAY_ABBR = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
+  function freqLabel() {
+    if (habit.frequency === 'DAILY') return 'Diario';
+    const dw = habit.daysOfWeek;
+    if (habit.frequency === 'WEEKLY' && Array.isArray(dw) && dw.length > 0) {
+      return dw.map(d => DAY_ABBR[d]).join(' ');
+    }
+    if (habit.frequency === 'BIWEEKLY' && dw?.week1) {
+      const w1 = (dw.week1 || []).map(d => DAY_ABBR[d]).join(' ');
+      const w2 = (dw.week2 || []).map(d => DAY_ABBR[d]).join(' ');
+      if (w1 && w2) return `S1:${w1} S2:${w2}`;
+      if (w1) return `Quincenal: ${w1}`;
+    }
+    return habit.frequency === 'BIWEEKLY' ? 'Quincenal' : 'Semanal';
+  }
 
   return (
-    <div className="card overflow-hidden cursor-pointer" onClick={onEdit}>
-      <div className="flex items-center gap-3 px-4 py-3" onClick={e => e.stopPropagation()}>
+    <div className="card overflow-hidden group">
+      <div className="flex items-center gap-3 px-4 py-3">
         <button onClick={onToggle}
           className={`w-7 h-7 rounded-md flex items-center justify-center transition-all flex-shrink-0 ${habit.completedToday ? 'bg-green-500 text-white shadow-sm' : 'bg-gray-50 dark:bg-neutral-800 text-gray-400 dark:text-neutral-500 hover:bg-green-50 dark:hover:bg-green-500/15 hover:text-green-500 dark:hover:text-green-400 border border-gray-100 dark:border-neutral-700'}`}>
           <Check size={14} strokeWidth={habit.completedToday ? 3 : 2} />
@@ -136,26 +147,23 @@ function HabitCard({ habit, expanded, onToggle, onEdit, onDelete, onExpand }) {
           <span className="hidden sm:inline text-gray-200 dark:text-neutral-700">·</span>
           <div className="hidden sm:flex items-center gap-0.5"><TrendingUp size={11} /><strong className="text-gray-600 dark:text-neutral-300">{habit.longestStreak}</strong></div>
           <span className="hidden sm:inline text-gray-200 dark:text-neutral-700">·</span>
-          <span className="hidden sm:inline capitalize text-[0.625rem]">{freqLabel}</span>
+          <span className="hidden sm:inline text-[0.625rem]">{freqLabel()}</span>
           <span className="text-gray-200 dark:text-neutral-700">·</span>
           <div className="flex items-center gap-1">
-            {getWeekDays(weekData).map((day, i) => (
-              <div key={i} className={`w-2.5 h-2.5 rounded-sm ${day.completed ? 'bg-green-400 dark:bg-green-500' : day.future ? 'bg-gray-100 dark:bg-neutral-800' : 'bg-gray-200 dark:bg-neutral-700'}`} title={`${WEEK_DAYS_SHORT[i]}: ${day.completed ? '✓' : day.future ? '—' : '✗'}`} />
+            {getWeekDays(weekData, habit).map((day, i) => (
+              <div key={i} className={`w-2.5 h-2.5 rounded-sm ${day.completed ? 'bg-green-400 dark:bg-green-500' : day.future ? 'bg-gray-100 dark:bg-neutral-800' : 'bg-gray-200 dark:bg-neutral-700'}`} title={`${['D','L','M','X','J','V','S'][day.date.getDay()]}: ${day.completed ? '✓' : day.future ? '—' : '✗'}`} />
             ))}
           </div>
-          <button onClick={e => { e.stopPropagation(); onExpand(); }} className="btn-ghost btn-sm p-1 ml-1">{expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</button>
+          <div className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex gap-0.5">
+            <button onClick={onEdit} className="btn-ghost btn-sm p-1.5 text-gray-400 dark:text-neutral-500 hover:text-primary-600 dark:hover:text-primary-400" title="Editar">
+              <Edit3 size={12} />
+            </button>
+            <button onClick={onDelete} className="btn-ghost btn-sm p-1.5 text-gray-400 dark:text-neutral-500 hover:text-red-600 dark:hover:text-red-400" title="Eliminar">
+              <Trash2 size={12} />
+            </button>
+          </div>
         </div>
       </div>
-
-      {expanded && (
-        <>
-          <HabitCalendarInline habitId={habit.id} />
-          <div className="flex gap-2 px-4 pb-4 pt-2 border-t border-gray-50 dark:border-neutral-700">
-            <button onClick={e => { e.stopPropagation(); onEdit(); }} className="btn-ghost btn-sm text-xs">Editar hábito</button>
-            <button onClick={e => { e.stopPropagation(); onDelete(); }} className="btn-ghost btn-sm text-xs hover:text-red-500 dark:hover:text-red-400">Eliminar</button>
-          </div>
-        </>
-      )}
     </div>
   );
 }
@@ -198,7 +206,23 @@ function HabitCalendarInline({ habitId }) {
   );
 }
 
-function getWeekDays(calendarData) {
+const BIWEEK_REF_HABIT = new Date('2000-01-03');
+
+function isDayScheduled(habit, dow) {
+  if (!habit || habit.frequency === 'DAILY') return true;
+  if (habit.frequency === 'WEEKLY') {
+    if (!habit.daysOfWeek || !Array.isArray(habit.daysOfWeek)) return true;
+    return habit.daysOfWeek.includes(dow);
+  }
+  if (habit.frequency === 'BIWEEKLY') {
+    if (!habit.daysOfWeek || !habit.daysOfWeek.week1) return true;
+    // Mostrar días de ambas semanas de la quincena
+    return [...(habit.daysOfWeek.week1 || []), ...(habit.daysOfWeek.week2 || [])].includes(dow);
+  }
+  return true;
+}
+
+function getWeekDays(calendarData, habit) {
   const today = new Date();
   const dayOfWeek = today.getDay();
   const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
@@ -206,6 +230,7 @@ function getWeekDays(calendarData) {
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(monday); d.setDate(monday.getDate() + i);
     const completed = calendarData?.days?.[d.getDate()] ?? false;
-    return { date: d, completed, future: d > today };
-  });
+    const scheduled = isDayScheduled(habit, d.getDay());
+    return { date: d, completed, future: d > today, scheduled };
+  }).filter(day => day.scheduled);
 }

@@ -12,6 +12,33 @@ import { useToast } from '../components/ui/Toast';
 import { SkeletonDashboard } from '../components/ui/Skeleton';
 import { WEEK_DAYS, DAY_NAMES, MONTHS } from '../constants';
 
+const BIWEEK_REF = new Date('2000-01-03');
+
+function habitShowsOnDate(habit, dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const dow = d.getDay();
+  const targetDate = new Date(dateStr + 'T00:00:00');
+  const created = new Date(habit.createdAt);
+  created.setHours(0,0,0,0);
+
+  // No mostrar antes de la fecha de creación
+  if (targetDate < created) return false;
+
+  if (habit.frequency === 'DAILY') return true;
+  if (habit.frequency === 'WEEKLY') {
+    if (!habit.daysOfWeek || !Array.isArray(habit.daysOfWeek)) return true;
+    return habit.daysOfWeek.includes(dow);
+  }
+  if (habit.frequency === 'BIWEEKLY') {
+    if (!habit.daysOfWeek || !habit.daysOfWeek.week1) return true;
+    const weekParity = Math.floor((targetDate - BIWEEK_REF) / (7 * 86400000)) % 2;
+    const weekKey = weekParity === 0 ? 'week1' : 'week2';
+    const days = habit.daysOfWeek[weekKey];
+    return Array.isArray(days) && days.includes(dow);
+  }
+  return false;
+}
+
 const LS_VIEW = 'dash_calView';
 const LS_SHOW_HABITS = 'dash_showHabits';
 const LS_COLOR_PRIORITY = 'dash_colorPriority';
@@ -343,7 +370,7 @@ function MultiDayView({ calView, allTasks, todayStr, yesterdayStr, tomorrowStr, 
 
   function renderDay(day) {
     const dayTasks = allTasks[day.date] || [];
-    const habitsToday = showHabits ? (allHabits || []) : [];
+    const habitsToday = showHabits ? (allHabits || []).filter(h => habitShowsOnDate(h, day.date)) : [];
 
     if (isCompact) {
       // Week view: row layout on mobile, grid cell on desktop
@@ -368,12 +395,12 @@ function MultiDayView({ calView, allTasks, todayStr, yesterdayStr, tomorrowStr, 
                 {t.title}
               </span>
             ))}
-            {showHabits && day.date >= todayStr && habitsToday.length > 0 && (
+            {showHabits && habitsToday.length > 0 && (
               habitsToday.map(h => (
                 <span key={h.id} className={`inline-block text-[0.5rem] px-1 py-0.5 rounded bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 truncate ${(day.isToday && h.completedToday) ? 'line-through opacity-50' : ''}`}>{h.name}</span>
               ))
             )}
-            {dayTasks.length === 0 && (!showHabits || day.date < todayStr || habitsToday.length === 0) && <span className="text-[0.625rem] text-gray-300 dark:text-neutral-600">—</span>}
+            {dayTasks.length === 0 && habitsToday.length === 0 && <span className="text-[0.625rem] text-gray-300 dark:text-neutral-600">—</span>}
           </div>
         </button>
       );
@@ -430,12 +457,12 @@ function MultiDayView({ calView, allTasks, todayStr, yesterdayStr, tomorrowStr, 
           {dayTasks.map(t => (
             <span key={t.id} className={`inline-block md:block text-xs px-1.5 py-0.5 rounded ${taskChipColor(t, colorPriority)}`}>{t.title}</span>
           ))}
-          {showHabits && day.date >= todayStr && habitsToday.length > 0 && (
+          {showHabits && habitsToday.length > 0 && (
             habitsToday.map(h => (
               <span key={h.id} className={`inline-block md:inline-block text-[0.625rem] px-1 py-0.5 rounded bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 truncate ${(day.isToday && h.completedToday) ? 'line-through opacity-60' : 'font-medium'}`}>{h.name}</span>
             ))
           )}
-          {dayTasks.length === 0 && (!showHabits || day.date < todayStr || habitsToday.length === 0) && <span className="text-xs text-gray-300 dark:text-neutral-600">—</span>}
+          {dayTasks.length === 0 && habitsToday.length === 0 && <span className="text-xs text-gray-300 dark:text-neutral-600">—</span>}
         </div>
       </button>
     );
@@ -477,7 +504,7 @@ function MonthView({ date, allTasks, todayStr, onPrev, onNext, onDayClick, color
           const day = i + 1; const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`; const isToday = dateStr === todayStr;
           const dayTasks = allTasks[dateStr] || [];
           const count = dayTasks.length;
-          const hasHabits = showHabits && allHabits?.length > 0 && dateStr >= todayStr;
+          const hasHabits = showHabits && allHabits?.length > 0 && allHabits.some(h => habitShowsOnDate(h, dateStr));
           return (
             <button key={day} onClick={() => onDayClick(dateStr, dayTasks)}
               className={`py-1.5 rounded-md text-center transition-all hover:bg-gray-50 dark:hover:bg-neutral-800 ${isToday ? 'bg-primary-50 dark:bg-primary-500/10' : ''}`}>
