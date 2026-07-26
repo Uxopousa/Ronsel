@@ -147,7 +147,7 @@ export default function Dashboard() {
   const hasContent = data.tasksToday?.length || pendingHabits.length || data.activeGoals?.length;
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-7xl">
       <div className="flex items-center justify-between mb-5">
         <h1 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">
           Hoy, {today.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}

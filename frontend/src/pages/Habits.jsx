@@ -56,7 +56,7 @@ export default function Habits() {
   }, [habits]);
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-7xl">
       <div className="flex items-center justify-between mb-5">
         <h1 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">Hábitos</h1>
         <button onClick={() => setModal({})} className="btn-primary btn-sm gap-1.5"><Plus size={14} /> Nuevo hábito</button>

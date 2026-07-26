@@ -69,7 +69,7 @@ export function SkeletonTaskList({ rows = 5, showCategory = true }) {
 
 export function SkeletonDashboard() {
   return (
-    <div className="max-w-5xl animate-fade-in">
+    <div className="max-w-7xl animate-fade-in">
       {/* Título */}
       <Skeleton className="h-5 w-48 mb-5" />
 
