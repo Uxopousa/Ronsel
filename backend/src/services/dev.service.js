@@ -26,6 +26,12 @@ const SEED_DATA = {
       startDate: new Date(),
       targetDate: new Date(Date.now() + 90 * 86400000),
       status: 'ACTIVE',
+      tasks: [
+        { title: 'Ver módulo 1: Introducción', priority: 'MEDIUM', status: 'COMPLETED' },
+        { title: 'Ver módulo 2: Tipos básicos', priority: 'MEDIUM', status: 'COMPLETED' },
+        { title: 'Ver módulo 3: Interfaces', priority: 'MEDIUM', status: 'PENDING' },
+        { title: 'Hacer proyecto final', priority: 'HIGH', status: 'PENDING' },
+      ],
     },
     {
       title: 'Poner en forma',
@@ -33,6 +39,11 @@ const SEED_DATA = {
       startDate: new Date(),
       targetDate: new Date(Date.now() + 60 * 86400000),
       status: 'ACTIVE',
+      tasks: [
+        { title: 'Correr 30 min', priority: 'MEDIUM', status: 'COMPLETED' },
+        { title: 'Apuntarse al gimnasio', priority: 'HIGH', status: 'PENDING' },
+        { title: 'Comprar ropa deportiva', priority: 'LOW', status: 'COMPLETED' },
+      ],
     },
   ],
 };
@@ -87,7 +98,14 @@ export async function seed(userId) {
   }
 
   for (const g of SEED_DATA.goals) {
-    await prisma.goal.create({ data: { ...g, userId } });
+    const goal = await prisma.goal.create({ data: { ...g, userId } });
+    const goalTasks = g.tasks || [];
+    for (const t of goalTasks) {
+      await prisma.task.create({
+        data: { ...t, goalId: goal.id, userId, dueDate: new Date(Date.now() + Math.floor(Math.random() * 14) * 86400000) },
+      });
+      created.tasks++;
+    }
     created.goals++;
   }
 
