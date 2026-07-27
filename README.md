@@ -7,7 +7,7 @@
 <br>
 
 <p align="center">
-  <img src="docs/screenshots/dashboard.png" alt="Ronsel Dashboard" width="800" />
+  <img src="docs/screenshots/hero.png" alt="Ronsel — Desktop dark + Mobile light" width="800" />
 </p>
 
 ---
@@ -53,16 +53,11 @@ The name comes from the Galician word for *wake* (the trail left by a ship), ref
 
 ## Screenshots
 
-| Screen | Placeholder |
-|--------|-------------|
-| Dashboard (light) | `docs/screenshots/dashboard-light.png` |
-| Dashboard (dark) | `docs/screenshots/dashboard-dark.png` |
-| Tasks list | `docs/screenshots/tasks.png` |
-| Tasks calendar | `docs/screenshots/tasks-calendar.png` |
-| Habits with stats | `docs/screenshots/habits.png` |
-| Goals with progress | `docs/screenshots/goals.png` |
-| Day detail modal | `docs/screenshots/day-modal.png` |
-| Global search | `docs/screenshots/search.png` |
+| Screen | Light | Dark |
+|---|---|---|
+| Dashboard (desktop + mobile) | `docs/screenshots/hero-light.png` | `docs/screenshots/hero-dark.png` |
+| Desktop | `docs/screenshots/app-desktop.png` | `docs/screenshots/app-desktop-dark.png` |
+| Mobile | `docs/screenshots/app-mobile.png` | `docs/screenshots/app-mobile-dark.png` |
 
 ## Tech Stack
 

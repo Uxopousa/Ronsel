@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ronsel — Mobile</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:transparent;display:flex;align-items:flex-start;justify-content:flex-start;min-height:100vh}
+.phone{background:#0a0a0b;border-radius:44px;padding:12px;box-shadow:0 0 0 2px #1c1c1e,0 0 0 5px #2c2c2e,0 0 0 6px #3a3a3c,0 20px 60px rgba(0,0,0,0.4);position:relative;display:inline-flex}
+.phone-screen{background:#fff;border-radius:34px;overflow:hidden;position:relative;line-height:0}
+.phone-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:28px;background:#0a0a0b;border-radius:0 0 18px 18px;z-index:10}
+.phone-screen img{display:block;width:100%;height:auto}
+.phone-home{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:132px;height:5px;background:rgba(255,255,255,0.3);border-radius:9999px;z-index:10}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="phone-screen">
+    <div class="phone-notch"></div>
+    <img src="app-mobile.png" alt="Ronsel Dashboard Mobile" draggable="false">
+    <div class="phone-home"></div>
+  </div>
+</div>
+</body>
+</html>
