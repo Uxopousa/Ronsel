@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import BaseModal from '../ui/BaseModal';
+import { Button } from '../ui/Button';
 
 const DAYS = [
   { value: 1, label: 'L' },
@@ -177,8 +178,8 @@ export default function HabitModal({ habit, categories, onSave, onClose }) {
           </select>
         </div>
         <div className="flex justify-end gap-2 pt-1">
-          <button type="button" onClick={onClose} className="btn-secondary btn-md">Cancelar</button>
-          <button type="submit" className="btn-primary btn-md">{isEdit ? 'Guardar cambios' : 'Crear hábito'}</button>
+          <Button type="button" variant="secondary" size="md" onClick={onClose}>Cancelar</Button>
+          <Button type="submit" variant="primary" size="md">{isEdit ? 'Guardar cambios' : 'Crear hábito'}</Button>
         </div>
       </form>
     </BaseModal>

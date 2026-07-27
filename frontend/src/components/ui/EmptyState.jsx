@@ -1,17 +1,18 @@
 import { CheckCircle } from 'lucide-react';
+import { Button } from './Button';
 
 export default function EmptyState({ icon: Icon, title, description, action }) {
   return (
     <div className="text-center py-16">
-      <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3">
-        {Icon ? <Icon size={20} className="text-gray-400 dark:text-neutral-500" /> : <CheckCircle size={20} className="text-gray-400 dark:text-neutral-500" />}
+      <div className="w-10 h-10 rounded-lg bg-surface-alt flex items-center justify-center mx-auto mb-3">
+        {Icon ? <Icon size={20} className="text-text-tertiary" /> : <CheckCircle size={20} className="text-text-tertiary" />}
       </div>
-      <p className="text-sm text-gray-500 dark:text-neutral-400 font-medium">{title}</p>
-      {description && <p className="text-xs text-gray-400 dark:text-neutral-500 mt-1">{description}</p>}
+      <p className="text-sm text-text-secondary font-medium">{title}</p>
+      {description && <p className="text-xs text-text-tertiary mt-1">{description}</p>}
       {action && (
-        <button onClick={action.onClick} className="btn-primary btn-sm mt-4 gap-1.5">
+        <Button variant="primary" size="sm" className="mt-4" onClick={action.onClick}>
           {action.label}
-        </button>
+        </Button>
       )}
     </div>
   );

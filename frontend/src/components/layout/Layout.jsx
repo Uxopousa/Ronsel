@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import BrandLogo from '../ui/BrandLogo';
 import ThemeToggle from '../ui/ThemeToggle';
@@ -12,8 +12,6 @@ import {
   Flame,
   Target,
   LogOut,
-  Menu,
-  X,
   Search,
   FlaskConical,
   Trash2,
@@ -28,13 +26,22 @@ const navItems = [
   { to: '/goals', label: 'Objetivos', icon: Target },
 ];
 
+const pageTitles = {
+  '/': 'Inicio',
+  '/tasks': 'Tareas',
+  '/habits': 'Hábitos',
+  '/goals': 'Objetivos',
+};
+
 export default function Layout() {
   const { user, logout } = useAuth();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
   const [searchOpen, setSearchOpen] = useState(false);
   const [devStatus, setDevStatus] = useState(null);
   const modKey = useModKey();
   const touch = useTouchDevice();
+
+  const pageTitle = pageTitles[location.pathname] || 'Ronsel';
 
   async function handleSeed() {
     setDevStatus('seed');
@@ -54,157 +61,139 @@ export default function Layout() {
         e.preventDefault();
         setSearchOpen(true);
       }
-      if (e.key === 'Escape') {
-        setSearchOpen(false);
-      }
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-neutral-950">
-      <aside
-        className={`${
-          mobileOpen ? 'flex flex-col' : 'hidden'
-        } md:flex md:flex-col w-56 bg-white dark:bg-neutral-900 border-r border-gray-100 dark:border-neutral-700 fixed md:static inset-y-0 left-0 z-40 animate-fade-in`}
-      >
+    <div className="flex flex-col h-screen bg-surface text-text-primary antialiased">
+      {/* ── Top Bar ── */}
+      <header className="h-14 bg-surface-card border-b border-border px-4 md:px-6 flex items-center flex-shrink-0 relative">
         {/* Brand */}
-        <div className="h-14 flex items-center gap-2.5 px-4 border-b border-gray-100 dark:border-neutral-700">
-          <BrandLogo size={22} />
-          <span className="text-sm font-semibold text-gray-900 dark:text-neutral-100 tracking-tight">Ronsel</span>
-          <button
-            className="md:hidden ml-auto text-gray-400 hover:text-gray-600 dark:hover:text-neutral-300 transition-colors"
-            onClick={() => setMobileOpen(false)}
-          >
-            <X size={16} />
-          </button>
-        </div>
+        <NavLink to="/" end className="flex items-center gap-2 flex-shrink-0">
+          <BrandLogo size={24} />
+          <span className="hidden sm:inline text-sm font-bold text-text-primary font-display">Ronsel</span>
+        </NavLink>
 
-        {/* Search trigger */}
-        <div className="px-3 pt-3 pb-2">
-          <button
-            onClick={() => setSearchOpen(true)}
-            className="w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-xs text-gray-400 dark:text-neutral-500 bg-gray-50 dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-100 dark:border-neutral-700 transition-colors"
-          >
-            <Search size={13} />
-            <span className="flex-1 text-left">Buscar...</span>
-            {!touch && (
-              <kbd className="text-2xs text-gray-400 dark:text-neutral-500 inline-flex items-center gap-0.5">
-                {modKey === '⌘' ? (
-                  <span className="text-xs">⌘K</span>
-                ) : (
-                  <span>Ctrl+K</span>
-                )}
-              </kbd>
-            )}
-          </button>
-        </div>
-
-        {/* Nav */}
-        <nav className="flex-1 px-2 pb-2 space-y-0.5">
+        {/* Desktop nav links — centered */}
+        <nav className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.end}
-              onClick={() => setMobileOpen(false)}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all duration-150 ${
+                `px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-primary-50 text-primary-700 font-medium dark:bg-primary-500/10 dark:text-primary-300'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800'
+                    ? 'bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-surface-alt'
                 }`
               }
             >
-              {({ isActive }) => (
-                <>
-                  <item.icon
-                    size={16}
-                    className={isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-neutral-500'}
-                    strokeWidth={isActive ? 2.5 : 2}
-                  />
-                  {item.label}
-                </>
-              )}
+              {item.label}
             </NavLink>
           ))}
         </nav>
 
-        {/* User + Theme + Logout */}
-        <div className="px-3 py-3 border-t border-gray-100 dark:border-neutral-700 space-y-2">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full bg-primary-100 text-primary-700 dark:bg-primary-500/15 dark:text-primary-300 flex items-center justify-center text-xs font-semibold flex-shrink-0">
-              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 dark:text-neutral-100 truncate">{user?.name}</p>
-              <p className="text-xs text-gray-400 dark:text-neutral-500 truncate">{user?.email}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <ThemeToggle />
+        {/* Mobile page title */}
+        <h1 className="lg:hidden text-sm font-semibold text-text-primary font-display flex-1 truncate ml-3">
+          {pageTitle}
+        </h1>
+
+        {/* Right actions group */}
+        <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
+          {/* Search */}
+          {!touch && (
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md text-xs text-text-tertiary bg-surface-alt border border-border hover:text-text-primary hover:border-border-hover transition-all"
+            >
+              <Search size={13} />
+              <span className="hidden lg:inline">Buscar</span>
+              <kbd className="text-2xs text-text-tertiary hidden lg:inline ml-1">
+                {modKey === '⌘' ? '⌘K' : 'Ctrl+K'}
+              </kbd>
+            </button>
+          )}
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="sm:hidden flex items-center justify-center w-9 h-9 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-alt transition-all"
+          >
+            <Search size={18} />
+          </button>
+
+          <ThemeToggle />
+
+          {/* Dev + logout group (desktop) */}
+          <div className="hidden sm:flex items-center gap-1 ml-1 pl-2 border-l border-border">
             <button
               onClick={handleSeed}
               disabled={devStatus === 'seed'}
-              className="btn-ghost btn-sm p-1.5 text-gray-400 dark:text-neutral-500 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950 transition-colors"
+              className="flex items-center justify-center w-8 h-8 rounded-md text-text-tertiary hover:text-success hover:bg-success-bg transition-all"
               title="Rellenar con datos de ejemplo"
             >
-              {devStatus === 'seed' ? <CheckCircle2 size={13} className="animate-pulse" /> : <FlaskConical size={13} />}
+              {devStatus === 'seed' ? <CheckCircle2 size={14} className="animate-pulse" /> : <FlaskConical size={14} />}
             </button>
             <button
               onClick={handleWipe}
               disabled={devStatus === 'wipe'}
-              className="btn-ghost btn-sm p-1.5 text-gray-400 dark:text-neutral-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
+              className="flex items-center justify-center w-8 h-8 rounded-md text-text-tertiary hover:text-error hover:bg-error-bg transition-all"
               title="Eliminar todos los datos"
             >
-              {devStatus === 'wipe' ? <CheckCircle2 size={13} className="animate-pulse" /> : <Trash2 size={13} />}
+              {devStatus === 'wipe' ? <CheckCircle2 size={14} className="animate-pulse" /> : <Trash2 size={14} />}
             </button>
             <button
               onClick={logout}
-              className="btn-ghost btn-sm flex-1 justify-start text-gray-400 dark:text-neutral-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 gap-2"
+              className="flex items-center justify-center w-8 h-8 rounded-md text-text-tertiary hover:text-error hover:bg-error-bg transition-all"
+              title="Cerrar sesión"
             >
               <LogOut size={14} />
-              Cerrar sesión
             </button>
           </div>
-        </div>
-      </aside>
 
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 bg-black/15 dark:bg-black/50 z-30 md:hidden animate-fade-in"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      {/* Content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="md:hidden h-14 bg-white dark:bg-neutral-900 border-b border-gray-100 dark:border-neutral-700 px-4 flex items-center gap-3">
+          {/* Mobile logout */}
           <button
-            onClick={() => setMobileOpen(true)}
-            className="text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-200 transition-colors"
+            onClick={logout}
+            className="sm:hidden flex items-center justify-center w-9 h-9 rounded-lg text-text-tertiary hover:text-error hover:bg-error-bg transition-all"
+            title="Cerrar sesión"
           >
-            <Menu size={20} />
+            <LogOut size={16} />
           </button>
-          <BrandLogo size={18} />
-          <span className="text-sm font-semibold text-gray-900 dark:text-neutral-100">Ronsel</span>
-          <div className="ml-auto flex items-center gap-1">
-            <ThemeToggle />
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300 transition-colors"
-            >
-              <Search size={18} />
-            </button>
-          </div>
-        </header>
+        </div>
+      </header>
 
-        <main className="flex-1 overflow-auto p-5 md:p-8 custom-scrollbar">
-          <Outlet />
-        </main>
-      </div>
+      {/* ── Content ── */}
+      <main className="flex-1 overflow-auto custom-scrollbar bg-surface">
+        <Outlet />
+      </main>
+
+      {/* ── Mobile Bottom Nav ── */}
+      <nav className="lg:hidden flex items-center justify-around h-16 bg-surface-card border-t border-border px-2 flex-shrink-0 safe-bottom">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center gap-0.5 w-14 h-full rounded-lg transition-all duration-150 ${
+                isActive
+                  ? 'text-brand-600 dark:text-brand-400'
+                  : 'text-text-tertiary hover:text-text-primary'
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                <span className={`text-[0.625rem] font-medium ${isActive ? 'font-semibold' : ''}`}>
+                  {item.label}
+                </span>
+              </>
+            )}
+          </NavLink>
+        ))}
+      </nav>
 
       <SearchPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>

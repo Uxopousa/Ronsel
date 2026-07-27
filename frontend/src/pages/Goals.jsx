@@ -4,6 +4,7 @@ import * as taskService from '../services/tasks';
 import GoalModal from '../components/shared/GoalModal';
 import { useToast } from '../components/ui/Toast';
 import { SkeletonGoalsPage } from '../components/ui/Skeleton';
+import { Button } from '../components/ui/Button';
 import { Plus, Target, ChevronDown, ChevronUp, Check, Plus as PlusIcon, CheckCircle } from 'lucide-react';
 
 export default function Goals() {
@@ -82,18 +83,18 @@ export default function Goals() {
   }
 
   return (
-    <div className="max-w-7xl">
+    <div className="max-w-[96rem] mx-auto w-full px-5 md:px-8 py-5 md:py-8">
       <div className="flex items-center justify-between mb-5">
-        <h1 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">Objetivos</h1>
-        <button onClick={() => setModal({})} className="btn-primary btn-sm gap-1.5"><Plus size={14} /> Nuevo objetivo</button>
+        <h1 className="text-xl font-semibold text-text-primary font-display">Objetivos</h1>
+        <Button variant="primary" size="sm" onClick={() => setModal({})}><Plus size={13} />Nuevo objetivo</Button>
       </div>
 
       {loading && <SkeletonGoalsPage />}
 
       {!loading && goals.length === 0 && (
         <div className="text-center py-16">
-          <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3"><Target size={20} className="text-gray-400 dark:text-neutral-500" /></div>
-          <p className="text-sm text-gray-400 dark:text-neutral-500">No hay objetivos. Crea tu primer objetivo.</p>
+          <div className="w-10 h-10 rounded-lg bg-surface-alt flex items-center justify-center mx-auto mb-3"><Target size={20} className="text-text-tertiary" /></div>
+          <p className="text-sm text-text-tertiary">No hay objetivos. Crea tu primer objetivo.</p>
         </div>
       )}
 
@@ -104,67 +105,67 @@ export default function Goals() {
           const tasks = goalTasks[goal.id];
           return (
             <div key={goal.id} className="card overflow-hidden">
-              <button onClick={() => toggleExpand(goal)} className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors ${prog.progress >= 100 ? 'border-green-200 dark:border-green-800' : ''}`}>
+              <button onClick={() => toggleExpand(goal)} className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-surface-alt transition-colors ${prog.progress >= 100 ? 'border-success/30' : ''}`}>
                 {prog.progress >= 100 ? (
-                  <CheckCircle size={16} className="text-green-600 dark:text-green-400 flex-shrink-0" />
+                  <CheckCircle size={16} className="text-success-text flex-shrink-0" />
                 ) : (
-                  <Target size={16} className="text-primary-600 dark:text-primary-400 flex-shrink-0" />
+                  <Target size={16} className="text-brand-600 dark:text-brand-400 flex-shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-900 dark:text-neutral-100 truncate">{goal.title}</span>
-                    {prog.progress >= 100 && <span className="badge text-[0.625rem] bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400">Completado</span>}
-                    {goal.status !== 'ACTIVE' && goal.status !== 'COMPLETED' && <span className="badge text-[0.625rem] bg-gray-50 dark:bg-neutral-800 text-gray-500 dark:text-neutral-400">Cancelado</span>}
+                    <span className="text-sm font-medium text-text-primary truncate">{goal.title}</span>
+                    {prog.progress >= 100 && <span className="badge text-[0.625rem] bg-success-bg text-success-text">Completado</span>}
+                    {goal.status !== 'ACTIVE' && goal.status !== 'COMPLETED' && <span className="badge text-[0.625rem] bg-surface-alt text-text-secondary">Cancelado</span>}
                   </div>
-                  {goal.description && <p className="text-xs text-gray-400 dark:text-neutral-500 truncate mt-0.5">{goal.description}</p>}
+                  {goal.description && <p className="text-xs text-text-tertiary truncate mt-0.5">{goal.description}</p>}
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`text-xs tabular-nums ${prog.progress >= 100 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-gray-400 dark:text-neutral-500'}`}>{prog.progress}%</span>
-                  <div className="w-16 bg-gray-100 dark:bg-neutral-800 rounded-full h-1.5">
-                    <div className={`h-1.5 rounded-full transition-all ${prog.progress >= 100 ? 'bg-green-500 dark:bg-green-400' : 'bg-primary-500 dark:bg-primary-400'}`} style={{ width: `${Math.min(prog.progress, 100)}%` }} />
+                  <span className={`text-xs tabular-nums ${prog.progress >= 100 ? 'text-success-text font-medium' : 'text-text-tertiary'}`}>{prog.progress}%</span>
+                  <div className="w-16 bg-surface-alt rounded-full h-1.5">
+                    <div className={`h-1.5 rounded-full transition-all ${prog.progress >= 100 ? 'bg-success' : 'bg-brand-500 dark:bg-brand-400'}`} style={{ width: `${Math.min(prog.progress, 100)}%` }} />
                   </div>
-                  {isExpanded ? <ChevronUp size={14} className="text-gray-400 dark:text-neutral-500" /> : <ChevronDown size={14} className="text-gray-400 dark:text-neutral-500" />}
+                  {isExpanded ? <ChevronUp size={14} className="text-text-tertiary" /> : <ChevronDown size={14} className="text-text-tertiary" />}
                 </div>
               </button>
 
               {isExpanded && (
-                <div className="px-4 pb-4 pt-2 border-t border-gray-50 dark:border-neutral-700 animate-fade-in">
-                  <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-neutral-500 mb-3">
-                    <span>Progreso: <strong className="text-gray-600 dark:text-neutral-300">{prog.completed}/{prog.total} tareas</strong></span>
+                <div className="px-4 pb-4 pt-2 border-t border-border animate-fade-in">
+                  <div className="flex items-center gap-4 text-xs text-text-tertiary mb-3">
+                    <span>Progreso: <strong className="text-text-secondary">{prog.completed}/{prog.total} tareas</strong></span>
                     {goal.targetDate && (<><span>·</span><span>Hasta {new Date(goal.targetDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</span></>)}
                   </div>
 
                   {loadingTasks[goal.id] && (
                     <div className="flex items-center justify-center py-4">
-                      <div className="w-5 h-5 border-2 border-primary-600 dark:border-primary-400 border-t-transparent rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-brand-600 dark:border-brand-400 border-t-transparent rounded-full animate-spin" />
                     </div>
                   )}
 
                   {!loadingTasks[goal.id] && tasks && tasks.length > 0 && (
                     <div className="space-y-0.5 mb-3">
                       {tasks.map(task => (
-                        <div key={task.id} className="flex items-center gap-2.5 py-1.5 px-2 rounded-md hover:bg-gray-50 dark:hover:bg-neutral-800/50 group">
-                          <button onClick={() => handleToggleTask(task)} className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 transition-colors ${task.status === 'COMPLETED' ? 'bg-green-500 border-green-500' : 'border-gray-300 dark:border-neutral-600 hover:border-primary-400 dark:hover:border-primary-500'}`}>{task.status === 'COMPLETED' && <Check size={9} className="text-white" strokeWidth={3} />}</button>
-                          <span className={`text-sm flex-1 truncate ${task.status === 'COMPLETED' ? 'line-through text-gray-400 dark:text-neutral-600' : 'text-gray-700 dark:text-neutral-200'}`}>{task.title}</span>
+                        <div key={task.id} className="flex items-center gap-2.5 py-1.5 px-2 rounded-md hover:bg-surface-alt group">
+                          <button onClick={() => handleToggleTask(task)} className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 transition-colors ${task.status === 'COMPLETED' ? 'bg-success border-success' : 'border-neutral-300 dark:border-neutral-600 hover:border-brand-400 dark:hover:border-brand-500'}`}>{task.status === 'COMPLETED' && <Check size={9} className="text-white" strokeWidth={3} />}</button>
+                          <span className={`text-sm flex-1 truncate ${task.status === 'COMPLETED' ? 'line-through text-text-tertiary' : 'text-text-primary'}`}>{task.title}</span>
                           {task.category && <span className="text-[0.625rem] px-1.5 py-0.5 rounded-sm font-medium" style={{ backgroundColor: task.category.color + '18', color: task.category.color }}>{task.category.name}</span>}
-                          {task.dueDate && <span className="text-[0.625rem] text-gray-400 dark:text-neutral-500">{new Date(task.dueDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span>}
+                          {task.dueDate && <span className="text-[0.625rem] text-text-tertiary">{new Date(task.dueDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span>}
                         </div>
                       ))}
                     </div>
                   )}
 
-                  {!loadingTasks[goal.id] && tasks && tasks.length === 0 && <p className="text-xs text-gray-400 dark:text-neutral-500 py-2">Sin tareas asociadas</p>}
+                  {!loadingTasks[goal.id] && tasks && tasks.length === 0 && <p className="text-xs text-text-tertiary py-2">Sin tareas asociadas</p>}
 
                   <div className="flex gap-2">
                     <input type="text" placeholder="Añadir tarea..." value={newTaskText[goal.id] || ''} onChange={e => setNewTaskText(prev => ({ ...prev, [goal.id]: e.target.value }))} onKeyDown={e => { if (e.key === 'Enter') handleAddTask(goal.id); }} className="input text-sm flex-1 h-8" disabled={submittingTask[goal.id]} />
-                    <button onClick={() => handleAddTask(goal.id)} className="btn-primary btn-sm px-2.5" disabled={submittingTask[goal.id]}>
-                      {submittingTask[goal.id] ? <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <PlusIcon size={14} />}
-                    </button>
+                    <Button variant="primary" size="sm" className="px-2.5" onClick={() => handleAddTask(goal.id)} disabled={submittingTask[goal.id]}>
+                      {submittingTask[goal.id] ? <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <PlusIcon size={13} />}
+                    </Button>
                   </div>
 
-                  <div className="flex gap-2 mt-3 pt-2 border-t border-gray-50 dark:border-neutral-700">
-                    <button onClick={() => setModal(goal)} className="btn-ghost btn-sm text-xs">Editar objetivo</button>
-                    <button onClick={() => handleDelete(goal.id)} className="btn-ghost btn-sm text-xs hover:text-red-500 dark:hover:text-red-400">Eliminar</button>
+                  <div className="flex gap-2 mt-3 pt-2 border-t border-border">
+                    <Button variant="ghost" size="sm" className="text-xs" onClick={() => setModal(goal)}>Editar objetivo</Button>
+                    <Button variant="ghost" size="sm" className="text-xs hover:text-error" onClick={() => handleDelete(goal.id)}>Eliminar</Button>
                   </div>
                 </div>
               )}

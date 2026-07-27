@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import BrandLogo from '../components/ui/BrandLogo';
+import { Button } from '../components/ui/Button';
 import { LogIn } from 'lucide-react';
 
 export default function Login() {
@@ -24,17 +25,17 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-neutral-950 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-surface px-4">
       <div className="w-full max-w-sm animate-slide-up">
         <div className="text-center mb-8">
           <BrandLogo size={40} className="mx-auto mb-3" />
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-neutral-100">Ronsel</h1>
-          <p className="text-sm text-gray-400 dark:text-neutral-500 mt-1">Inicia sesión en tu cuenta</p>
+          <h1 className="text-xl font-semibold text-text-primary font-display">Ronsel</h1>
+          <p className="text-sm text-text-tertiary mt-1">Inicia sesión en tu cuenta</p>
         </div>
 
         <div className="card p-6">
           {error && (
-            <div className="mb-4 px-3 py-2 bg-red-50 dark:bg-red-950 border border-red-100 dark:border-red-900 rounded-md text-xs text-red-600 dark:text-red-300">
+            <div className="mb-4 px-3 py-2 bg-error-bg border border-error/20 rounded-md text-xs text-error-text">
               {error}
             </div>
           )}
@@ -47,15 +48,15 @@ export default function Login() {
               <label className="input-label">Contraseña</label>
               <input type="password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="input" placeholder="••••••••" />
             </div>
-            <button type="submit" className="btn-primary btn-lg w-full gap-2">
+            <Button type="submit" variant="primary" size="lg" className="w-full">
               <LogIn size={15} />Iniciar sesión
-            </button>
+            </Button>
           </form>
         </div>
 
-        <p className="text-center text-xs text-gray-400 dark:text-neutral-500 mt-6">
+        <p className="text-center text-xs text-text-tertiary mt-6">
           ¿No tienes cuenta?{' '}
-          <Link to="/register" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium">Regístrate</Link>
+          <Link to="/register" className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium">Regístrate</Link>
         </p>
       </div>
     </div>

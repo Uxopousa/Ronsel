@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import BaseModal from '../ui/BaseModal';
+import { Button } from '../ui/Button';
 
 export default function TaskModal({ task, categories, goals, onSave, onClose }) {
   const isEdit = !!task.id;
@@ -89,8 +90,8 @@ export default function TaskModal({ task, categories, goals, onSave, onClose }) 
           </select>
         </div>
         <div className="flex justify-end gap-2 pt-1">
-          <button type="button" onClick={onClose} className="btn-secondary btn-md">Cancelar</button>
-          <button type="submit" className="btn-primary btn-md">{isEdit ? 'Guardar cambios' : 'Crear tarea'}</button>
+          <Button type="button" variant="secondary" size="md" onClick={onClose}>Cancelar</Button>
+          <Button type="submit" variant="primary" size="md">{isEdit ? 'Guardar cambios' : 'Crear tarea'}</Button>
         </div>
       </form>
     </BaseModal>

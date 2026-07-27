@@ -1,5 +1,6 @@
 import { Sun, Moon } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { Button } from './Button';
 
 export default function ThemeToggle() {
   const { theme, setTheme, resolved } = useTheme();
@@ -11,17 +12,18 @@ export default function ThemeToggle() {
   const title = resolved === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro';
 
   return (
-    <button
+    <Button
+      variant="ghost"
+      size="icon"
       onClick={toggle}
       title={title}
-      className="btn-ghost btn-sm p-1.5"
       aria-label={title}
     >
       {resolved === 'dark' ? (
-        <Moon size={15} className="text-primary-400" />
+        <Moon size={15} className="text-brand-400" />
       ) : (
         <Sun size={15} className="text-amber-500" />
       )}
-    </button>
+    </Button>
   );
 }

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import * as categoryService from '../../services/categories';
 import { Edit3, Trash2, Plus } from 'lucide-react';
 import BaseModal from '../ui/BaseModal';
+import { Button } from '../ui/Button';
 
 const presetColors = [
   '#6366f1', '#8b5cf6', '#d946ef', '#ec4899', '#f43f5e',
@@ -36,9 +37,9 @@ export default function CategoryModal({ categories, onChange, onClose }) {
     <BaseModal title="Categorías" onClose={onClose}>
       <div className="p-5">
           <form onSubmit={handleSubmit} className="mb-5 space-y-3">
-            {error && (
-              <div className="px-3 py-2 bg-red-50 dark:bg-red-950 border border-red-100 dark:border-red-900 rounded-md text-xs text-red-600 dark:text-red-300">{error}</div>
-            )}
+              {error && (
+                <div className="px-3 py-2 bg-error-bg border border-error/20 rounded-md text-xs text-error-text">{error}</div>
+              )}
             <div className="flex gap-2">
               <input type="text" placeholder="Nombre de la categoría" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input text-sm flex-1" required />
             </div>
@@ -50,23 +51,23 @@ export default function CategoryModal({ categories, onChange, onClose }) {
               ))}
             </div>
             <div className="flex gap-2">
-              <button type="submit" className="btn-primary btn-sm gap-1"><Plus size={13} />{editing ? 'Actualizar' : 'Añadir'}</button>
-              {editing && <button type="button" onClick={handleCancelEdit} className="btn-secondary btn-sm">Cancelar</button>}
+              <Button type="submit" variant="primary" size="sm"><Plus size={13} />{editing ? 'Actualizar' : 'Añadir'}</Button>
+              {editing && <Button type="button" variant="secondary" size="sm" onClick={handleCancelEdit}>Cancelar</Button>}
             </div>
           </form>
           <div className="space-y-1 max-h-60 overflow-auto">
             {categories.length === 0 && (
-              <p className="text-gray-400 dark:text-neutral-500 text-xs text-center py-4">No hay categorías aún</p>
+              <p className="text-text-tertiary text-xs text-center py-4">No hay categorías aún</p>
             )}
             {categories.map((cat) => (
-              <div key={cat.id} className="flex items-center justify-between py-2 px-2 rounded-md hover:bg-gray-50 dark:hover:bg-neutral-800 group">
+              <div key={cat.id} className="flex items-center justify-between py-2 px-2 rounded-md hover:bg-surface-alt group">
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: cat.color }} />
-                  <span className="text-sm text-gray-700 dark:text-neutral-200">{cat.name}</span>
+                  <span className="text-sm text-text-primary">{cat.name}</span>
                 </div>
                 <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-all">
-                  <button onClick={() => handleEdit(cat)} className="btn-ghost btn-sm p-1"><Edit3 size={12} /></button>
-                  <button onClick={() => handleDelete(cat.id)} className="btn-ghost btn-sm p-1 hover:text-red-500 dark:hover:text-red-400"><Trash2 size={12} /></button>
+                  <button onClick={() => handleEdit(cat)} className="btn-icon text-text-tertiary hover:text-brand-600 dark:hover:text-brand-400 hover:bg-surface-alt"><Edit3 size={12} /></button>
+                  <button onClick={() => handleDelete(cat.id)} className="btn-icon text-text-tertiary hover:text-error hover:bg-error-bg"><Trash2 size={12} /></button>
                 </div>
               </div>
             ))}

@@ -69,23 +69,23 @@ export default function SearchPalette({ open, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] animate-fade-in" onClick={onClose}>
       <div className="fixed inset-0 bg-black/15 dark:bg-black/60" />
-      <div className="relative w-full max-w-lg mx-4 bg-white dark:bg-neutral-900 rounded-lg shadow-modal animate-scale-in overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center gap-3 px-4 h-12 border-b border-gray-100 dark:border-neutral-700">
-          <Search size={16} className="text-gray-400 dark:text-neutral-500 flex-shrink-0" />
+      <div className="relative w-full max-w-lg mx-4 bg-surface-card rounded-lg shadow-modal animate-scale-in overflow-hidden border border-border" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-3 px-4 h-12 border-b border-border">
+          <Search size={16} className="text-text-tertiary flex-shrink-0" />
           <input
             ref={inputRef}
             type="text"
             placeholder="Buscar tareas, hábitos, objetivos..."
             value={query}
             onChange={e => setQuery(e.target.value)}
-            className="flex-1 text-sm bg-transparent outline-none placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:text-neutral-100"
+            className="flex-1 text-sm bg-transparent outline-none placeholder:text-text-tertiary text-text-primary"
             onKeyDown={e => {
               if (e.key === 'Escape') onClose();
               if (e.key === 'k' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); onClose(); }
             }}
           />
           {!touch && (
-            <kbd className="text-2xs text-gray-400 dark:text-neutral-500 bg-gray-50 dark:bg-neutral-800 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+            <kbd className="text-2xs text-text-tertiary bg-surface-alt px-1.5 py-0.5 rounded flex items-center gap-0.5">
               <Command size={10} />{modKey === '⌘' ? 'K' : ''}{modKey !== '⌘' && 'K'}
             </kbd>
           )}
@@ -94,16 +94,16 @@ export default function SearchPalette({ open, onClose }) {
         <div className="max-h-80 overflow-y-auto p-2">
           {loading && (
             <div className="flex items-center justify-center py-8">
-              <div className="w-5 h-5 border-2 border-primary-600 dark:border-primary-400 border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-brand-600 dark:border-brand-400 border-t-transparent rounded-full animate-spin" />
             </div>
           )}
 
           {!loading && query && !hasResults && (
-            <p className="text-sm text-gray-400 dark:text-neutral-500 text-center py-8">Sin resultados para "{query}"</p>
+            <p className="text-sm text-text-tertiary text-center py-8">Sin resultados para "{query}"</p>
           )}
 
           {!loading && !query && (
-            <p className="text-xs text-gray-400 dark:text-neutral-500 text-center py-8">Escribe para buscar...</p>
+            <p className="text-xs text-text-tertiary text-center py-8">Escribe para buscar...</p>
           )}
 
           {!loading && results.tasks.length > 0 && (
@@ -147,8 +147,8 @@ function Section({ title, icon: Icon, children }) {
   return (
     <div className="mb-1">
       <div className="flex items-center gap-1.5 px-2 py-1.5">
-        <Icon size={12} className="text-gray-400 dark:text-neutral-500" />
-        <span className="text-2xs font-medium text-gray-400 dark:text-neutral-500 uppercase tracking-wider">{title}</span>
+        <Icon size={12} className="text-text-tertiary" />
+        <span className="text-2xs font-medium text-text-tertiary uppercase tracking-wider">{title}</span>
       </div>
       {children}
     </div>
@@ -159,10 +159,10 @@ function ResultRow({ label, sub, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors text-left"
+      className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-text-primary hover:bg-surface-alt transition-colors text-left"
     >
       <span className="flex-1 truncate">{label}</span>
-      {sub && <span className="text-2xs text-gray-400 dark:text-neutral-500 flex-shrink-0">{sub}</span>}
+      {sub && <span className="text-2xs text-text-tertiary flex-shrink-0">{sub}</span>}
     </button>
   );
 }
