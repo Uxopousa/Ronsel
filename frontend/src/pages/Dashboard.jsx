@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ListTodo, Flame, Target, CalendarDays, AlertCircle, CheckCircle, Plus, Eye, Palette, ChevronRight } from 'lucide-react';
+import { AlertCircle, CheckCircle, Plus, Eye, Palette, ChevronRight, Flame, Target } from 'lucide-react';
 import api from '../services/api';
 import * as taskService from '../services/tasks';
 import * as habitService from '../services/habits';
@@ -132,6 +132,7 @@ export default function Dashboard() {
   const overdue = (data.tasksToday || []).filter(t => t.dueDate && t.dueDate.slice(0, 10) < todayStr);
   const todayTasks = (data.tasksToday || []).filter(t => !t.dueDate || t.dueDate.slice(0, 10) === todayStr);
   const hasContent = data.tasksToday?.length || pendingHabits.length || data.activeGoals?.length;
+  const goalsWithPendingTasks = (data.activeGoals || []).filter(g => g.totalTasks > g.completedTasks).length;
 
   return (
     <div className="max-w-[96rem] mx-auto w-full p-5 md:p-8 space-y-6">
@@ -144,9 +145,9 @@ export default function Dashboard() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <SummaryCard title="Pendientes" count={todayTasks.length} doneLabel="Completadas" link="/tasks" icon={ListTodo} color="primary" />
-        <SummaryCard title="Hábitos" count={pendingHabits.length} doneLabel="Completados" link="/habits" icon={Flame} color="amber" />
-        <SummaryCard title="Objetivos activos" count={data.activeGoals?.length || 0} doneLabel="Sin objetivos" link="/goals" icon={Target} color="accent" />
+        <SummaryCard title="Pendientes" count={todayTasks.length} doneLabel="Completadas" link="/tasks" />
+        <SummaryCard title="Hábitos" count={pendingHabits.length} doneLabel="Completados" link="/habits" />
+        <SummaryCard title="Objetivos" count={data.activeGoals?.length || 0} doneLabel="Sin objetivos" link="/goals" />
       </div>
 
       {/* Alerts */}
@@ -161,7 +162,11 @@ export default function Dashboard() {
       {todayTasks.length === 0 && pendingHabits.length === 0 && data.activeGoals?.length > 0 && (
         <div className="flex items-center gap-2.5 px-4 py-3 rounded-lg bg-success-bg border border-success/20 text-sm text-success-text">
           <CheckCircle size={16} className="flex-shrink-0" />
-          <span className="flex-1">¡Todo al día! Sin tareas ni hábitos pendientes.</span>
+          <span className="flex-1">
+            {goalsWithPendingTasks > 0
+              ? `Tareas y hábitos al día · ${goalsWithPendingTasks} ${goalsWithPendingTasks === 1 ? 'objetivo con tareas pendientes' : 'objetivos con tareas pendientes'}`
+              : '¡Todo al día! Sin tareas ni hábitos pendientes.'}
+          </span>
         </div>
       )}
 
@@ -227,7 +232,7 @@ export default function Dashboard() {
                 {data.activeGoals.map(goal => (
                   <Link key={goal.id} to="/goals"
                     className={`group bg-surface-card border rounded-lg flex items-center gap-3 px-4 py-3 hover:border-border-hover transition-all ${
-                      goal.progress >= 100 ? 'border-success/30 bg-success-bg/50' : 'border-border hover:shadow-card-hover'
+                      goal.progress >= 100 ? 'border-success/30 bg-success-bg/50' : 'border-border hover:border-border-hover'
                     }`}
                   >
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
@@ -284,7 +289,7 @@ export default function Dashboard() {
                   {[{k:'3day',l:'3 días'},{k:'agenda',l:'Agenda'},{k:'month',l:'Mes'}].map(({k,l}) => (
                     <button key={k} onClick={() => setView(k)}
                       className={`px-2.5 sm:px-3 py-1.5 text-xs rounded font-medium transition-all ${
-                        calView === k ? 'bg-surface text-text-primary shadow-sm' : 'text-text-tertiary hover:text-text-primary'
+                        calView === k ? 'bg-surface text-text-primary ring-1 ring-border' : 'text-text-tertiary hover:text-text-primary'
                       }`}
                     >
                       {l}

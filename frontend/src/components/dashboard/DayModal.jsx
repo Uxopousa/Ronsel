@@ -20,7 +20,7 @@ export default function DayModal({ date, tasks, onClose, onToggleTask, onQuickTa
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in" onClick={onClose}>
       <div className="fixed inset-0 bg-black/30 dark:bg-black/60 backdrop-blur-sm" />
-      <div ref={modalRef} tabIndex={-1} className="relative w-full max-w-md mx-4 bg-surface-card rounded-lg shadow-modal border border-border animate-scale-in max-h-[85vh] overflow-y-auto custom-scrollbar" onClick={e => e.stopPropagation()}>
+      <div ref={modalRef} tabIndex={-1} className="relative w-full max-w-md mx-4 bg-surface-card rounded-lg border border-border animate-scale-in max-h-[85vh] overflow-y-auto custom-scrollbar" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 h-12 border-b border-border">
           <h2 className="text-sm font-semibold text-text-primary">{dayName}, {displayDate}</h2>
           <div className="flex items-center gap-1">

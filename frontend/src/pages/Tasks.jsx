@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import * as taskService from '../services/tasks';
 import * as categoryService from '../services/categories';
 import * as goalService from '../services/goals';
@@ -19,6 +19,7 @@ export default function Tasks() {
   const [catModal, setCatModal] = useState(false);
   const [view, setView] = useState('list');
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const [quickFilter, setQuickFilter] = useState('');
   const [filters, setFilters] = useState({ status: '', priority: '', categoryId: '', goalId: '', sortBy: 'createdAt', sortOrder: 'desc' });
@@ -46,7 +47,7 @@ export default function Tasks() {
     setLoading(true);
     const q = buildQuery();
     taskService.getTasks(q).then(t => {
-      if (search.trim()) { const s = search.toLowerCase(); t = t.filter(t => t.title.toLowerCase().includes(s)); }
+      if (debouncedSearch.trim()) { const s = debouncedSearch.toLowerCase(); t = t.filter(t => t.title.toLowerCase().includes(s)); }
       setTasks(t);
     }).catch(() => { addToast('Error al cargar tareas', 'error'); }).finally(() => setLoading(false));
   }
@@ -54,8 +55,12 @@ export default function Tasks() {
   function loadCategories() { categoryService.getCategories().then(setCategories).catch(() => {}); }
   function loadGoals() { goalService.getGoals().then(setGoals).catch(() => {}); }
 
-  useEffect(() => { loadTasks(); }, [filters, quickFilter, search, view, calDate]);
+  useEffect(() => { loadTasks(); }, [filters, quickFilter, debouncedSearch, view, calDate]);
   useEffect(() => { loadCategories(); loadGoals(); }, []);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 250);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   async function handleSave(task) {
     try {
@@ -114,8 +119,8 @@ export default function Tasks() {
             <option value="createdAt">Creación</option><option value="dueDate">Fecha límite</option><option value="priority">Prioridad</option>
           </select>
           <div className="flex bg-surface-alt rounded-lg p-0.5 gap-0.5">
-            <button onClick={() => setView('list')} className={`p-1.5 rounded ${view === 'list' ? 'bg-surface text-text-primary shadow-sm' : 'text-text-tertiary hover:text-text-primary'}`} title="Lista"><List size={14} /></button>
-            <button onClick={() => setView('calendar')} className={`p-1.5 rounded ${view === 'calendar' ? 'bg-surface text-text-primary shadow-sm' : 'text-text-tertiary hover:text-text-primary'}`} title="Calendario"><CalendarDays size={14} /></button>
+            <button onClick={() => setView('list')} className={`p-1.5 rounded ${view === 'list' ? 'bg-surface text-text-primary ring-1 ring-border' : 'text-text-tertiary hover:text-text-primary'}`} title="Lista"><List size={14} /></button>
+            <button onClick={() => setView('calendar')} className={`p-1.5 rounded ${view === 'calendar' ? 'bg-surface text-text-primary ring-1 ring-border' : 'text-text-tertiary hover:text-text-primary'}`} title="Calendario"><CalendarDays size={14} /></button>
           </div>
         </div>
       </div>
@@ -197,7 +202,7 @@ function FilterPanel({ filters, categories, goals, onChange, onClose }) {
   }, [onClose]);
 
   return (
-    <div data-filter-panel className="absolute top-full right-0 mt-1 w-56 bg-surface-card rounded-lg shadow-dropdown border border-border p-3 z-10 animate-fade-in" onClick={e => e.stopPropagation()}>
+    <div data-filter-panel className="absolute top-full right-0 mt-1 w-56 bg-surface-card rounded-lg border border-border p-3 z-10 animate-fade-in" onClick={e => e.stopPropagation()}>
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Filtros</span>
         <button onClick={onClose} className="text-text-tertiary hover:text-text-primary"><X size={12} /></button>

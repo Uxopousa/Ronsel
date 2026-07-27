@@ -72,7 +72,7 @@ export default function Layout() {
       <header className="h-14 bg-surface-card border-b border-border px-4 md:px-6 flex items-center flex-shrink-0 relative">
         {/* Brand */}
         <NavLink to="/" end className="flex items-center gap-2 flex-shrink-0">
-          <BrandLogo size={24} />
+          <BrandLogo size={36} />
           <span className="hidden sm:inline text-sm font-bold text-text-primary font-display">Ronsel</span>
         </NavLink>
 

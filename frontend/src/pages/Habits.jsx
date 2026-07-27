@@ -132,7 +132,7 @@ function HabitCard({ habit, onToggle, onEdit, onDelete }) {
     <div className="card overflow-hidden group">
       <div className="flex items-center gap-3 px-4 py-3">
         <button onClick={onToggle}
-          className={`w-7 h-7 rounded-md flex items-center justify-center transition-all flex-shrink-0 ${habit.completedToday ? 'bg-success text-white shadow-sm' : 'bg-surface-alt text-text-tertiary hover:bg-success-bg hover:text-success-text border border-border'}`}>
+          className={`w-7 h-7 rounded-md flex items-center justify-center transition-all flex-shrink-0 ${habit.completedToday ? 'bg-success text-white' : 'bg-surface-alt text-text-tertiary hover:bg-success-bg hover:text-success-text border border-border'}`}>
           <Check size={14} strokeWidth={habit.completedToday ? 3 : 2} />
         </button>
         <div className="flex-1 min-w-0">

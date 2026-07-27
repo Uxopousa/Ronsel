@@ -120,7 +120,9 @@ export default function Goals() {
                   {goal.description && <p className="text-xs text-text-tertiary truncate mt-0.5">{goal.description}</p>}
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`text-xs tabular-nums ${prog.progress >= 100 ? 'text-success-text font-medium' : 'text-text-tertiary'}`}>{prog.progress}%</span>
+                  <span className={`text-xs tabular-nums whitespace-nowrap ${prog.progress >= 100 ? 'text-success-text font-medium' : 'text-text-tertiary'}`}>
+                    {prog.total > 0 ? `${prog.completed}/${prog.total}` : `${prog.progress}%`}
+                  </span>
                   <div className="w-16 bg-surface-alt rounded-full h-1.5">
                     <div className={`h-1.5 rounded-full transition-all ${prog.progress >= 100 ? 'bg-success' : 'bg-brand-500 dark:bg-brand-400'}`} style={{ width: `${Math.min(prog.progress, 100)}%` }} />
                   </div>

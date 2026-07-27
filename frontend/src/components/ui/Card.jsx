@@ -6,7 +6,7 @@ function Card({ className, hover, children, ...props }) {
     <Component
       className={cn(
         'bg-surface-card rounded-lg border border-border',
-        hover && 'hover:border-border-hover hover:shadow-card-hover transition-all duration-150 cursor-pointer text-left',
+        hover && 'hover:border-border-hover transition-all duration-150 cursor-pointer text-left',
         className
       )}
       {...props}

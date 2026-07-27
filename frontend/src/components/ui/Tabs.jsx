@@ -31,7 +31,7 @@ function Tab({ value, className, children }) {
       className={cn(
         'px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-150',
         isActive
-          ? 'bg-surface text-text-primary shadow-sm'
+          ? 'bg-surface text-text-primary ring-1 ring-border'
           : 'text-text-secondary hover:text-text-primary',
         className
       )}
