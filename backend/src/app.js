@@ -12,6 +12,7 @@ import taskRoutes from './routes/task.routes.js';
 import habitRoutes from './routes/habit.routes.js';
 import goalRoutes from './routes/goal.routes.js';
 import devRoutes from './routes/dev.routes.js';
+import healthRoutes from './routes/health.routes.js';
 import errorHandler from './middleware/error.middleware.js';
 import { setupSwagger } from './docs/swagger.js';
 
@@ -23,6 +24,8 @@ app.use(morgan('dev'));
 app.use(express.json());
 
 setupSwagger(app);
+
+app.use('/api', healthRoutes);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
