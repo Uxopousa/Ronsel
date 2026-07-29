@@ -22,7 +22,8 @@ function DemoRedirect() {
     if (loading) return;
     if (user) return;
     localStorage.removeItem('token');
-    api.get('/auth/demo')
+    api.get('/health', { timeout: 45000 }).catch(() => {});
+    api.get('/auth/demo', { timeout: 45000 })
       .then(res => {
         localStorage.setItem('token', res.data.token);
         window.location.href = '/';

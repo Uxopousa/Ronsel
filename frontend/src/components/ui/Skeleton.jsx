@@ -164,24 +164,109 @@ export function SkeletonFullPage() {
 
 export function SkeletonDemoRedirect() {
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-neutral-950">
-      <div className="flex flex-col items-center gap-4">
-        {/* Logo placeholder */}
-        <Skeleton className="w-12 h-12 rounded-xl" />
-        {/* Brand name */}
-        <Skeleton className="h-5 w-24" />
-        {/* Subtle loading indicator */}
-        <div className="flex items-center gap-1.5 mt-2">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div
-              key={i}
-              className="w-1.5 h-1.5 rounded-full bg-primary-400 dark:bg-primary-500 animate-bounce"
-              style={{ animationDelay: `${i * 0.15}s` }}
-            />
-          ))}
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-neutral-950">
+      {/* Top bar */}
+      <header className="h-14 bg-white dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800 px-4 md:px-6 flex items-center flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Skeleton className="w-6 h-6 rounded-lg" />
+          <Skeleton className="h-3.5 w-14 hidden sm:inline" />
         </div>
-        <Skeleton className="h-3 w-40 mt-1" />
-      </div>
+        <nav className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-7 w-16 rounded-md" />
+          ))}
+        </nav>
+        <h1 className="lg:hidden text-sm font-semibold flex-1 truncate ml-3">
+          <Skeleton className="h-3.5 w-20" />
+        </h1>
+        <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
+          <Skeleton className="hidden sm:flex h-7 w-20 rounded-md" />
+          <Skeleton className="sm:hidden w-9 h-9 rounded-lg" />
+          <Skeleton className="w-9 h-9 rounded-lg" />
+          <div className="hidden sm:flex items-center gap-1 ml-1 pl-2 border-l border-gray-200 dark:border-neutral-800">
+            <Skeleton className="w-8 h-8 rounded-md" />
+            <Skeleton className="w-8 h-8 rounded-md" />
+            <Skeleton className="w-8 h-8 rounded-md" />
+          </div>
+          <Skeleton className="sm:hidden w-9 h-9 rounded-lg" />
+        </div>
+      </header>
+
+      {/* Dashboard content */}
+      <main className="flex-1 overflow-auto p-5 md:p-8">
+        <div className="max-w-[96rem] mx-auto w-full space-y-6">
+          {/* Mensaje de warm-up */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="w-1.5 h-1.5 rounded-full bg-primary-400 dark:bg-primary-500 animate-bounce"
+                  style={{ animationDelay: `${i * 0.15}s` }}
+                />
+              ))}
+            </div>
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              Iniciando servidor...
+              <span className="text-[11px] text-gray-400 dark:text-gray-600"> (puede tardar ~15-30s)</span>
+            </p>
+          </div>
+
+          <Skeleton className="h-5 w-56" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <SkeletonSummaryCard />
+            <SkeletonSummaryCard />
+            <SkeletonSummaryCard />
+          </div>
+          <Skeleton className="h-11 w-full rounded-md" />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            <div className="space-y-6 min-w-0">
+              <Skeleton className="h-4 w-28" />
+              <SkeletonTaskList rows={3} showCategory={true} />
+            </div>
+            <div className="space-y-6 min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <Skeleton className="h-4 w-20" />
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-7 w-36 rounded-md" />
+                  <Skeleton className="w-7 h-7 rounded-md" />
+                  <Skeleton className="w-7 h-7 rounded-md" />
+                </div>
+              </div>
+              <div className="card p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <Skeleton className="w-6 h-6 rounded-md" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="w-6 h-6 rounded-md" />
+                </div>
+                <div className="grid grid-cols-7 gap-2 mb-2">
+                  {Array.from({ length: 7 }).map((_, i) => (
+                    <Skeleton key={i} className="h-3 w-full" />
+                  ))}
+                </div>
+                <div className="grid grid-cols-7 gap-2">
+                  {Array.from({ length: 5 }).map((_, row) =>
+                    Array.from({ length: 7 }).map((_, col) => (
+                      <Skeleton key={`${row}-${col}`} className="h-14 w-full rounded-md" />
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Mobile bottom nav */}
+      <nav className="lg:hidden flex items-center justify-around h-16 bg-white dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-800 px-2 flex-shrink-0">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex flex-col items-center justify-center gap-0.5 w-14 h-full">
+            <Skeleton className="w-5 h-5 rounded" />
+            <Skeleton className="h-2.5 w-10" />
+          </div>
+        ))}
+      </nav>
     </div>
   );
 }
